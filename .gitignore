@@ -22,6 +22,9 @@ staticfiles/
 .vscode/
 .idea/
 
+# GitHub
+.github/
+
 # OS
 .DS_Store
 Thumbs.db
