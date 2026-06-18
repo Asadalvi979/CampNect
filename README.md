@@ -30,16 +30,17 @@
 
 ## 📋 Table of Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Getting Started](#-getting-started)
-- [Deployment](#-deployment)
-- [API Reference](#-api-reference)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Overview](#overview)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Deployment](#deployment)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -55,6 +56,55 @@ Built for **Riphah International University** but adaptable to any institution.
 - 🔐 **University CMS authentication** — Secure login using institutional IDs with email OTP verification
 - 🤝 **Structured mentorship** — Alumni mentor current students with a formal request/accept workflow
 - 📚 **Resource sharing** — Upload and discover study notes, project resources, and academic materials
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="screenshots/landing.png" alt="Landing Page" width="400"/></td>
+      <td><img src="screenshots/dashboard.png" alt="Dashboard" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Landing Page</em></td>
+      <td align="center"><em>Dashboard</em></td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/login.png" alt="Login" width="400"/></td>
+      <td><img src="screenshots/register.png" alt="Registration" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Login</em></td>
+      <td align="center"><em>Registration</em></td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/chat.png" alt="Chat" width="400"/></td>
+      <td><img src="screenshots/communities.png" alt="Communities" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Direct Messaging</em></td>
+      <td align="center"><em>Communities</em></td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/mentorship.png" alt="Mentorship" width="400"/></td>
+      <td><img src="screenshots/profile.png" alt="Profile" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Mentorship</em></td>
+      <td align="center"><em>User Profile</em></td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/notes.png" alt="Notes" width="400"/></td>
+      <td><img src="screenshots/collaboration.png" alt="Collaboration" width="400"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Notes & Resources</em></td>
+      <td align="center"><em>Collaboration Projects</em></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
