@@ -1,0 +1,821 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - {{ community.name }} Chat</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+    <style>
+        .community-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 70px);
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            padding: var(--space-md);
+            position: relative;
+        }
+        .community-chat-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            background: white;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            border: 1px solid #e0e8e4;
+            border-bottom: none;
+        }
+        .community-chat-header h2 {
+            font-size: var(--fs-xl);
+            color: #1C3353;
+            margin: 0;
+        }
+        .community-chat-header .member-count {
+            font-size: var(--fs-sm);
+            color: #8aa99b;
+        }
+        .community-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-lg);
+            background: #f8faf9;
+            border: 1px solid #e0e8e4;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        .community-msg {
+            display: flex;
+            gap: 8px;
+            max-width: 80%;
+            align-items: flex-end;
+        }
+        .community-msg.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .community-msg.received {
+            align-self: flex-start;
+        }
+        .community-msg .msg-avatar {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+        }
+        .community-msg .msg-avatar .avatar-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .community-msg .msg-bubble {
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: var(--fs-base);
+            line-height: 1.5;
+            max-width: 100%;
+        }
+        .community-msg.sent .msg-bubble {
+            background: #1C3353;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .community-msg.received .msg-bubble {
+            background: white;
+            color: #1C3353;
+            border: 1px solid #e0e8e4;
+            border-bottom-left-radius: 4px;
+        }
+        .community-msg .msg-sender {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #D4AF37;
+            margin-bottom: 2px;
+        }
+        .community-msg.received .msg-sender {
+            color: #1C3353;
+        }
+        .community-msg .msg-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 4px;
+        }
+        .community-msg .msg-file {
+            display: block;
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: inherit;
+            text-decoration: none;
+            font-size: var(--fs-sm);
+        }
+        .community-msg.received .msg-file {
+            background: #f0f2f0;
+            color: #1C3353;
+        }
+        .community-msg .msg-file:hover {
+            text-decoration: underline;
+        }
+        .community-chat-input {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: white;
+            border: 1px solid #e0e8e4;
+            border-top: none;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            align-items: center;
+        }
+        .community-chat-input .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f8faf9;
+            border: 1.5px solid #e0e8e4;
+            border-radius: var(--radius-md);
+            transition: border-color var(--transition-fast);
+        }
+        .community-chat-input .input-wrapper:focus-within {
+            border-color: #1C3353;
+            background: #fff;
+        }
+        .community-chat-input .input-wrapper textarea,
+        .community-chat-input .input-wrapper input[type="text"] {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            font-family: inherit;
+            font-size: var(--fs-base);
+            background: transparent;
+            outline: none;
+        }
+        .community-chat-input .input-wrapper textarea {
+            resize: none;
+            line-height: 1.5;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .community-chat-input .plus-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            color: #8aa99b;
+            cursor: pointer;
+            padding: 8px 14px 8px 4px;
+            line-height: 1;
+            transition: color var(--transition-fast);
+        }
+        .community-chat-input .plus-btn:hover {
+            color: #1C3353;
+        }
+        .community-chat-input .send-btn {
+            background: #1C3353;
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--fs-base);
+            transition: all var(--transition-fast);
+        }
+        .community-chat-input .send-btn:hover {
+            background: #2c4a6e;
+        }
+        .no-membership-msg {
+            text-align: center;
+            padding: var(--space-xl);
+            color: #8aa99b;
+        }
+        .admin-badge {
+            display: inline-block;
+            background: #D4AF37;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .msg-permission-tag {
+            font-size: var(--fs-sm);
+            color: #8aa99b;
+            margin-left: var(--space-sm);
+        }
+        .members-toggle {
+            background: none;
+            border: 1px solid #e0e8e4;
+            border-radius: var(--radius-md);
+            padding: 4px 12px;
+            font-size: var(--fs-sm);
+            color: #1C3353;
+            cursor: pointer;
+            margin-left: auto;
+            transition: all var(--transition-fast);
+        }
+        .members-toggle:hover { background: #f0f2f0; }
+        .members-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            display: none;
+            z-index: 100;
+            border-radius: var(--radius-lg);
+        }
+        .members-overlay.show { display: flex; align-items: center; justify-content: center; }
+        .members-overlay .members-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 420px;
+            max-height: 80%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .members-overlay .members-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid #e0e8e4;
+        }
+        .members-overlay .members-card-header h3 {
+            margin: 0;
+            font-size: var(--fs-lg);
+            color: #1C3353;
+        }
+        .members-overlay .members-card-header button {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #8aa99b;
+            padding: 0 4px;
+        }
+        .members-overlay .members-card-header button:hover { color: #1C3353; }
+        .members-overlay .members-card-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-sm) var(--space-lg);
+        }
+        .members-overlay .members-card-footer {
+            padding: var(--space-sm) var(--space-lg);
+            border-top: 1px solid #e0e8e4;
+        }
+        .member-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f2f0;
+            font-size: var(--fs-sm);
+        }
+        .member-row:last-child { border-bottom: none; }
+        .member-row .member-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toggle-admin-btn {
+            background: none;
+            border: 1px solid #e0e8e4;
+            border-radius: var(--radius-sm);
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: #1C3353;
+            transition: all var(--transition-fast);
+        }
+        .toggle-admin-btn:hover { background: #f0f2f0; }
+        .community-msg.sent .msg-bubble { position: relative; }
+        .msg-delete-btn {
+            position: absolute; top: 2px; right: 4px;
+            background: none; border: none; cursor: pointer;
+            font-size: 0.75rem; color: #ccc; display: none;
+            padding: 2px 6px; line-height: 1;
+        }
+        .community-msg.sent .msg-bubble:hover .msg-delete-btn { display: block; }
+        .msg-delete-btn:hover { color: #cc4444; }
+        .msg-no-send-notice {
+            text-align: center;
+            padding: var(--space-md);
+            color: #8aa99b;
+            font-size: var(--fs-sm);
+            background: #f8faf9;
+            border: 1px solid #e0e8e4;
+            border-top: none;
+        }
+        @media (max-width: 768px) {
+            .community-msg { max-width: 90%; }
+            .community-chat-input { flex-wrap: wrap; }
+        }
+        .ctx-menu {
+            position: fixed; z-index: 9999;
+            background: white; border: 1px solid #e0e8e4;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            padding: 4px 0; min-width: 160px;
+            display: none;
+        }
+        .ctx-menu.show { display: block; }
+        .ctx-menu-item {
+            padding: 8px 16px; font-size: var(--fs-sm);
+            color: #1C3353; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .ctx-menu-item:hover { background: #f5f7f6; }
+        .ctx-menu-item.danger { color: #cc4444; }
+        .ctx-menu-sep { height: 1px; background: #e0e8e4; margin: 4px 0; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="top-navbar">
+        <div class="nav-left">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="nav-logo">CampNect</h2>
+        </div>
+        <div class="nav-center"></div>
+        <div class="nav-right">
+            <div class="profile-dropdown" id="profileDropdown">
+                {% if user.profile_pic %}
+                    <img src="{{ user.profile_pic.url }}" alt="Profile" class="profile-img" id="profileImg">
+                {% else %}
+                    <div class="profile-img" id="profileImg" style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:1.1rem;border-radius:50%;width:40px;height:40px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                {% endif %}
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{% url 'profile' %}"><i class="fas fa-user"></i> My Profile</a>
+                    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="profile-card">
+                <div class="profile-card-avatar">
+                    {% if user.profile_pic %}
+                        <img src="{{ user.profile_pic.url }}" alt="Profile">
+                    {% else %}
+                        <div style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:1.3rem;border-radius:50%;width:60px;height:60px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                    {% endif %}
+                </div>
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <p class="profile-badge">{% if user.role == 'alumni' %}Alumni - {{ user.department }}{% elif user.semester %}{{ user.department }} - Semester {{ user.semester }}{% else %}{{ user.department }}{% endif %}</p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ connections_count }}</span>
+                        <span class="stat-label">Connections</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ communities_count }}</span>
+                        <span class="stat-label">Communities</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-home"></i></span><span>Dashboard</span></a>
+                <a href="{% url 'profile' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-user"></i></span><span>Profile</span></a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}<a href="{% url 'alumni_directory' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-user-graduate"></i></span><span>Alumni Directory</span></a>{% endif %}
+                <a href="{% url 'communities' %}" class="nav-item active"><span class="nav-icon"><i class="fas fa-users"></i></span><span>Communities</span></a>
+                {% if user.role != 'alumni' %}<a href="{% url 'notes' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-book"></i></span><span>Notes</span></a>{% endif %}
+                {% if user.role != 'alumni' %}<a href="{% url 'collaboration' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-handshake"></i></span><span>Collaboration</span></a>{% endif %}
+                <a href="{% url 'chat' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-comments"></i></span><span>Chat</span></a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}<a href="{% url 'mentorship' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-graduation-cap"></i></span><span>Mentorship</span></a>{% endif %}
+            </nav>
+        </aside>
+
+        <div class="overlay" id="overlay"></div>
+
+        <div class="community-chat-container">
+            <div class="community-chat-header">
+                <div>
+                    <h2>#{{ community.name }}
+                        {% if community.message_permission == 'admins_only' %}
+                            <span class="msg-permission-tag"><i class="fas fa-lock"></i> admins only</span>
+                        {% else %}
+                            <span class="msg-permission-tag"><i class="fas fa-comments"></i> all members</span>
+                        {% endif %}
+                    </h2>
+                    <span class="member-count">{{ community.members.count }} members</span>
+                </div>
+                <button class="members-toggle" id="membersToggle"><i class="fas fa-users"></i> Members</button>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    {% if is_member %}
+                        <button class="leave-btn" id="leaveCommunityBtn" style="background:none;border:1px solid #e0e8e4;border-radius:var(--radius-sm);padding:6px 14px;font-size:0.8rem;cursor:pointer;color:#cc4444;">Leave</button>
+                    {% else %}
+                        <form method="POST" style="margin:0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="join_community">
+                            <button type="submit" class="modal-save" style="padding:6px 16px;font-size:0.8rem;">Join</button>
+                        </form>
+                    {% endif %}
+                    <a href="{% url 'communities' %}" style="color:#8aa99b;text-decoration:none;font-size:0.9rem;">&larr; Back</a>
+                </div>
+            </div>
+
+            <div class="members-overlay" id="membersOverlay">
+                <div class="members-card">
+                    <div class="members-card-header">
+                        <h3>Members ({{ members|length }})</h3>
+                        <button type="button" id="membersOverlayClose">&times;</button>
+                    </div>
+                    <div class="members-card-body">
+                        {% for m in members %}
+                            <div class="member-row">
+                                <div class="member-name">
+                                    <a href="#" onclick="showUserQuickView({{ m.user.id }}); return false;" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;">
+                                        {% if m.user.profile_pic %}
+                                            <img src="{{ m.user.profile_pic.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                        {% else %}
+                                            <div style="width:100%;height:100%;background:#1C3353;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;">{{ m.user.get_full_name|default:m.user.cms|slice:":2"|upper }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <span>{{ m.user.get_full_name|default:m.user.cms }}</span>
+                                    </a>
+                                    {% if m.is_admin %}
+                                        <span class="admin-badge">Admin</span>
+                                    {% endif %}
+                                    {% if m.user == community.created_by %}
+                                        <span style="font-size:0.65rem;color:#8aa99b;">(creator)</span>
+                                    {% endif %}
+                                </div>
+                                {% if is_admin and m.user != community.created_by and m.user != request.user %}
+                                    <form method="POST" style="margin:0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_admin">
+                                        <input type="hidden" name="member_id" value="{{ m.id }}">
+                                        <button type="submit" class="toggle-admin-btn" style="padding:4px 14px;font-size:0.75rem;">
+                                            {% if m.is_admin %}Demote{% else %}Promote{% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if is_admin %}
+                        <div class="members-card-footer">
+                            <button type="button" class="modal-save" id="addMemberBtn" style="width:100%;">+ Add Member</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if not is_member %}
+                <div class="no-membership-msg" style="text-align:center;padding:var(--space-md);color:#8aa99b;font-size:var(--fs-sm);background:#f8faf9;border-bottom:1px solid #e0e8e4;">
+                    You're viewing as a guest — click <strong>Join</strong> above to participate.
+                </div>
+            {% endif %}
+            <div class="community-chat-messages" id="chatMessages">
+                {% for msg in messages %}
+                    <div class="community-msg {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                        {% if msg.sender != user %}
+                            <div class="msg-avatar">
+                                {% if msg.sender.profile_pic %}
+                                    <img src="{{ msg.sender.profile_pic.url }}" alt="" class="avatar-img">
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="msg-bubble">
+                            {% if msg.sender != user %}
+                                <div class="msg-sender">
+                                    <a href="#" onclick="showUserQuickView({{ msg.sender.id }}); return false;" style="color:inherit;text-decoration:none;">{{ msg.sender.get_full_name|default:msg.sender.cms }}</a>
+                                    {% if msg.sender.id in admin_ids %}
+                                        <span class="admin-badge">Admin</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <form method="POST" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_message">
+                                    <input type="hidden" name="message_id" value="{{ msg.id }}">
+                                    <button type="submit" class="msg-delete-btn" title="Delete" onclick="return confirm('Delete this message?')">&times;</button>
+                                </form>
+                            {% endif %}
+                            {% if msg.text %}{{ msg.text }}{% endif %}
+                            {% if msg.file %}
+                                <a href="{{ msg.file.url }}" class="msg-file" target="_blank"><i class="fas fa-paperclip"></i> {{ msg.file.name|slice:"17:" }}</a>
+                            {% endif %}
+                            <span class="msg-time">{{ msg.timestamp|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div style="text-align:center;color:#8aa99b;padding:var(--space-xl);">No messages yet. Start the conversation!</div>
+                {% endfor %}
+            </div>
+
+            {% if not is_member %}
+                <div class="msg-no-send-notice">
+                    Join this community to send messages.
+                </div>
+            {% elif can_send %}
+                    <form class="community-chat-input" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="input-wrapper">
+                            <textarea name="text" placeholder="Type a message..." id="msgInput" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.closest('form').querySelector('.send-btn').click()}"></textarea>
+                            <label class="plus-btn" id="plusBtn">
+                                +
+                                <input type="file" name="file" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" hidden id="fileInput">
+                            </label>
+                        </div>
+                        <button type="submit" class="send-btn">Send</button>
+                    </form>
+                {% else %}
+                    <div class="msg-no-send-notice">
+                        {% if not is_member %}
+                            Join this community to send messages.
+                        {% else %}
+                            Only admins can send messages in this community.
+                        {% endif %}
+                    </div>
+                {% endif %}
+        </div>
+
+    <div class="modal-overlay" id="leaveConfirmModal">
+        <div class="modal-card edit-modal-card" style="max-width:360px;">
+            <div class="edit-modal-header">
+                <h3>Leave Community?</h3>
+                <button type="button" class="edit-modal-close" id="leaveConfirmClose">&times;</button>
+            </div>
+            <div class="edit-modal-body">
+                <p style="margin:0;color:#1C3353;font-size:var(--fs-base);">Are you sure you want to leave <strong>{{ community.name }}</strong>? You'll need to be re-added or re-join to participate again.</p>
+            </div>
+            <div class="edit-modal-footer" style="gap:10px;">
+                <button type="button" class="modal-cancel" id="leaveCancelBtn" style="flex:1;">Cancel</button>
+                <form method="POST" style="flex:1;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="leave_community">
+                    <button type="submit" class="modal-save" style="width:100%;background:#cc4444;">Leave</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addMemberModal">
+        <div class="modal-card edit-modal-card" style="max-width:400px;">
+            <div class="edit-modal-header">
+                <h3>Add Member</h3>
+                <button type="button" class="edit-modal-close" id="addMemberClose">&times;</button>
+            </div>
+            <div class="edit-modal-body">
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Search Users</label>
+                        <input type="text" id="addMemberSearch" placeholder="Type a name..." style="margin-bottom:0;">
+                    </div>
+                </div>
+                <div id="addMemberUserList" style="width:100%;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.currentUser = {
+            id: {{ user.id }},
+            name: '{{ user.first_name|escapejs }} {{ user.last_name|escapejs }}',
+        };
+        window.communityId = {{ community.id }};
+        function getCSRFToken() {
+            var m = document.cookie.match(/\bcsrftoken=([^;]+)/);
+            return m ? m[1] : '';
+        }
+        window.allUsersForAdd = [
+            {% for u in all_users_for_add %}
+            {
+                id: {{ u.id }},
+                name: '{{ u.get_full_name|default:u.cms|escapejs }}',
+                avatar_initials: '{{ u.get_full_name|default:u.cms|slice:":2"|upper }}',
+                profile_pic: {% if u.profile_pic %}'{{ u.profile_pic.url|escapejs }}'{% else %}null{% endif %},
+            },
+            {% endfor %}
+        ];
+
+        var membersOverlay = document.getElementById('membersOverlay');
+        var membersOverlayClose = document.getElementById('membersOverlayClose');
+        document.getElementById('membersToggle')?.addEventListener('click', function() {
+            if (membersOverlay) membersOverlay.classList.add('show');
+        });
+        if (membersOverlayClose) {
+            membersOverlayClose.addEventListener('click', function() { membersOverlay.classList.remove('show'); });
+        }
+        if (membersOverlay) {
+            membersOverlay.addEventListener('click', function(e) { if (e.target === membersOverlay) membersOverlay.classList.remove('show'); });
+        }
+
+        var addMemberBtn = document.getElementById('addMemberBtn');
+        var addMemberModal = document.getElementById('addMemberModal');
+        var addMemberClose = document.getElementById('addMemberClose');
+        var addMemberSearch = document.getElementById('addMemberSearch');
+        var addMemberUserList = document.getElementById('addMemberUserList');
+
+        function renderAddMemberUsers(filter) {
+            var term = (filter || '').toLowerCase();
+            var list = window.allUsersForAdd;
+            if (term) { list = list.filter(function(u) { return u.name.toLowerCase().includes(term); }); }
+            addMemberUserList.innerHTML = list.map(function(u) {
+                var img = u.profile_pic ? '<img src="' + u.profile_pic + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#1C3353;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">' + u.avatar_initials + '</div>';
+                return '<div class="new-msg-user-item" data-id="' + u.id + '" style="cursor:pointer;">' +
+                    img +
+                    '<div class="conversation-info"><h4>' + u.name + '</h4></div>' +
+                '</div>';
+            }).join('');
+            document.querySelectorAll('#addMemberUserList .new-msg-user-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    var uid = parseInt(item.dataset.id);
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '';
+                    form.innerHTML = '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCSRFToken() + '">' +
+                        '<input type="hidden" name="action" value="add_member">' +
+                        '<input type="hidden" name="user_id" value="' + uid + '">';
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+        }
+
+        if (addMemberBtn && addMemberModal) {
+            addMemberBtn.addEventListener('click', function() {
+                if (membersOverlay) membersOverlay.classList.remove('show');
+                renderAddMemberUsers('');
+                addMemberModal.classList.add('show');
+            });
+        }
+        if (addMemberClose) {
+            addMemberClose.addEventListener('click', function() { addMemberModal.classList.remove('show'); });
+        }
+        if (addMemberModal) {
+            addMemberModal.addEventListener('click', function(e) { if (e.target === addMemberModal) addMemberModal.classList.remove('show'); });
+        }
+        if (addMemberSearch) {
+            addMemberSearch.addEventListener('input', function() { renderAddMemberUsers(addMemberSearch.value); });
+        }
+
+        var leaveBtn = document.getElementById('leaveCommunityBtn');
+        var leaveModal = document.getElementById('leaveConfirmModal');
+        var leaveClose = document.getElementById('leaveConfirmClose');
+        var leaveCancel = document.getElementById('leaveCancelBtn');
+        if (leaveBtn && leaveModal) {
+            leaveBtn.addEventListener('click', function() { leaveModal.classList.add('show'); });
+        }
+        if (leaveClose && leaveModal) {
+            leaveClose.addEventListener('click', function() { leaveModal.classList.remove('show'); });
+        }
+        if (leaveCancel && leaveModal) {
+            leaveCancel.addEventListener('click', function() { leaveModal.classList.remove('show'); });
+        }
+        if (leaveModal) {
+            leaveModal.addEventListener('click', function(e) { if (e.target === leaveModal) leaveModal.classList.remove('show'); });
+        }
+    </script>
+
+    <div class="ctx-menu" id="ctxMenu">
+        <div class="ctx-menu-item" data-action="copy" id="ctxCopy"><i class="fas fa-clipboard"></i> Copy Text</div>
+        <div class="ctx-menu-item danger" data-action="delete" id="ctxDelete"><i class="fas fa-trash-alt"></i> Delete</div>
+        <div class="ctx-menu-sep"></div>
+        <div class="ctx-menu-item" data-action="download" id="ctxDownload"><i class="fas fa-download"></i> Download File</div>
+        <div class="ctx-menu-item" data-action="open" id="ctxOpen"><i class="fas fa-link"></i> Open in New Tab</div>
+    </div>
+
+    <div class="img-lightbox" id="imgLightbox">
+        <div class="img-lightbox-content">
+            <div class="img-lightbox-header">
+                <button class="img-lightbox-download" id="lightboxDownload"><i class="fas fa-download"></i> Download</button>
+                <button class="img-lightbox-close" id="lightboxClose">&times;</button>
+            </div>
+            <div class="img-lightbox-body">
+                <img id="lightboxImg" src="" alt="Preview">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ctxMenu = document.getElementById('ctxMenu');
+        var ctxTarget = null;
+
+        document.addEventListener('contextmenu', function(e) {
+            var msgEl = e.target.closest('.community-msg');
+            if (!msgEl) { ctxMenu.classList.remove('show'); return; }
+            e.preventDefault();
+
+            var msgId = null;
+            var deleteForm = msgEl.querySelector('form input[name="action"][value="delete_message"]');
+            if (deleteForm) msgId = deleteForm.closest('form').querySelector('input[name="message_id"]').value;
+
+            var bubble = msgEl.querySelector('.msg-bubble');
+            var text = bubble ? bubble.textContent.replace(/[×✕].*/, '').trim() : '';
+            var fileLink = msgEl.querySelector('.msg-file');
+            var imgPreview = msgEl.querySelector('.msg-img-preview');
+            var fileUrl = fileLink ? fileLink.getAttribute('href') : (imgPreview ? imgPreview.getAttribute('src') : null);
+
+            ctxTarget = { msgId: msgId, fileUrl: fileUrl, text: text };
+
+            document.getElementById('ctxCopy').style.display = text ? 'flex' : 'none';
+            document.getElementById('ctxDelete').style.display = msgId ? 'flex' : 'none';
+            document.getElementById('ctxDownload').style.display = fileUrl ? 'flex' : 'none';
+            document.getElementById('ctxOpen').style.display = fileUrl ? 'flex' : 'none';
+
+            var x = e.clientX, y = e.clientY;
+            var mw = window.innerWidth, mh = window.innerHeight;
+            var cw = 180, ch = ctxMenu.children.length * 36;
+            if (x + cw > mw) x = mw - cw - 8;
+            if (y + ch > mh) y = mh - ch - 8;
+            ctxMenu.style.left = x + 'px'; ctxMenu.style.top = y + 'px';
+            ctxMenu.classList.add('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!ctxMenu.contains(e.target)) ctxMenu.classList.remove('show');
+        });
+
+        document.querySelectorAll('#ctxMenu .ctx-menu-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var action = item.dataset.action;
+                if (action === 'copy' && ctxTarget && ctxTarget.text) {
+                    navigator.clipboard.writeText(ctxTarget.text).catch(function(){});
+                } else if (action === 'delete' && ctxTarget && ctxTarget.msgId) {
+                    if (confirm('Delete this message?')) {
+                        var form = document.createElement('form');
+                        form.method = 'POST'; form.action = '';
+                        form.innerHTML =
+                            '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCSRFToken() + '">' +
+                            '<input type="hidden" name="action" value="delete_message">' +
+                            '<input type="hidden" name="message_id" value="' + ctxTarget.msgId + '">';
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                } else if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
+                    var a = document.createElement('a');
+                    a.href = ctxTarget.fileUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+                } else if (action === 'open' && ctxTarget && ctxTarget.fileUrl) {
+                    window.open(ctxTarget.fileUrl, '_blank');
+                }
+                ctxMenu.classList.remove('show');
+            });
+        });
+    </script>
+    <script>
+        function openImageLightbox(src) {
+            var lb = document.getElementById('imgLightbox');
+            var img = document.getElementById('lightboxImg');
+            var dl = document.getElementById('lightboxDownload');
+            if (!lb || !img) return;
+            img.src = src;
+            img.classList.remove('zoomed');
+            if (dl) dl.setAttribute('href', src);
+            lb.classList.add('show');
+        }
+        document.addEventListener('click', function(e) {
+            var lb = document.getElementById('imgLightbox');
+            if (lb && e.target === lb) { lb.classList.remove('show'); }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { var lb = document.getElementById('imgLightbox'); if (lb) lb.classList.remove('show'); }
+        });
+        function convertImageLinks(container) {
+            if (!container) container = document;
+            var links = container.querySelectorAll('.msg-file');
+            var imgExt = /\.(jpg|jpeg|png|webp|gif)$/i;
+            [].forEach.call(links, function(link) {
+                if (imgExt.test(link.getAttribute('href'))) {
+                    var img = document.createElement('img');
+                    img.src = link.getAttribute('href');
+                    img.className = 'msg-img-preview';
+                    img.alt = '';
+                    img.loading = 'lazy';
+                    img.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openImageLightbox(this.src);
+                    });
+                    link.parentNode.replaceChild(img, link);
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var closeBtn = document.getElementById('lightboxClose');
+            var dlBtn = document.getElementById('lightboxDownload');
+            var lbImg = document.getElementById('lightboxImg');
+            if (closeBtn) closeBtn.addEventListener('click', function() { document.getElementById('imgLightbox').classList.remove('show'); });
+            if (dlBtn) dlBtn.addEventListener('click', function(e) { e.preventDefault(); var a = document.createElement('a'); a.href = document.getElementById('lightboxImg').src; a.download = ''; document.body.appendChild(a); a.click(); a.remove(); });
+            if (lbImg) lbImg.addEventListener('click', function() { this.classList.toggle('zoomed'); });
+            convertImageLinks(document.getElementById('chatMessages'));
+        });
+    </script>
+    {% include 'user_quick_view.html' %}
+    <script src="{% static 'assets/js/auth.js' %}"></script>
+    <script src="{% static 'assets/js/dashboard.js' %}"></script>
+    <script src="{% static 'assets/js/communities.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+[build]
+  builder = "NIXPACKS"
+  nixpacksConfigPath = "CampNect_Backend"

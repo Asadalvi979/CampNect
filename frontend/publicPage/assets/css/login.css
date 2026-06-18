@@ -1,0 +1,206 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #F6F0D6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    background-image: url('../../images/chatgpt-image.png');
+
+    background-size: cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.login-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    background: white;
+    max-width: 450px;
+    width: 100%;
+    padding: 2.5rem var(--space-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+}
+
+.logo-wrapper {
+    margin-bottom: var(--space-xl);
+}
+
+.logo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1C3353, #2c5a7a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.3rem;
+}
+
+.tagline {
+    font-size: var(--fs-base);
+    color: #5a7a8c;
+    letter-spacing: 1px;
+}
+
+.welcome-text {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: #1C3353;
+    margin-bottom: var(--space-sm);
+}
+
+.subtitle {
+    color: #5a7a8c;
+    font-size: var(--fs-md);
+    margin-bottom: var(--space-xl);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.input-group {
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: #1C3353;
+    margin-bottom: var(--space-sm);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.9rem var(--space-md);
+    border: 1.5px solid #e0e8e4;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-md);
+    font-family: inherit;
+    transition: var(--transition-base);
+    background: #fafafa;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #1C3353;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(28, 51, 83, 0.1);
+}
+
+.login-btn {
+    background: #1C3353;
+    color: #F6F0D6;
+    border: none;
+    padding: 0.9rem;
+    border-radius: var(--radius-lg);
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+    margin-top: var(--space-sm);
+}
+
+.login-btn:hover {
+    background: #2c4a6e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(28, 51, 83, 0.2);
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: var(--space-sm);
+}
+
+.forgot-link {
+    display: inline-block;
+    color: #1e6f5c;
+    text-decoration: none;
+    font-size: var(--fs-base);
+    margin-bottom: var(--space-md);
+    transition: color var(--transition-fast);
+}
+
+.forgot-link:hover {
+    color: #1C3353;
+    text-decoration: underline;
+}
+
+.signup-text {
+    font-size: var(--fs-base);
+    color: #5a7a8c;
+}
+
+.signup-text a {
+    color: #1e6f5c;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-text a:hover {
+    color: #1C3353;
+    text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+    body {
+        padding: var(--space-md);
+    }
+
+    .login-card {
+        padding: 1.8rem 1.5rem;
+    }
+
+    .logo {
+        font-size: 2rem;
+    }
+
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+
+    .input-group input {
+        padding: 0.7rem 0.9rem;
+    }
+
+.login-select {
+    width: 100%;
+    padding: 0.9rem var(--space-md);
+    border: 1.5px solid #e0e8e4;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-md);
+    font-family: inherit;
+    background: #fafafa;
+    color: #1C3353;
+    transition: border-color var(--transition-fast);
+    appearance: none;
+    cursor: pointer;
+}
+
+.login-select:focus {
+    outline: none;
+    border-color: #1C3353;
+    box-shadow: 0 0 0 3px rgba(28, 51, 83, 0.1);
+}
+
+.login-btn {
+        padding: 0.7rem;
+    }
+}

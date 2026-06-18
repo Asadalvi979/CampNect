@@ -1,0 +1,203 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="feed-tabs">
+    <button class="tab-btn active" data-filter="all">All</button>
+    <button class="tab-btn" data-filter="announcement"><i class="fas fa-bullhorn"></i> Announcements</button>
+    <button class="tab-btn" data-filter="notes"><i class="fas fa-book"></i> Notes</button>
+    <button class="tab-btn" data-filter="collaboration"><i class="fas fa-handshake"></i> Collaboration</button>
+</div>
+
+<div class="feed" id="feedContainer"></div>
+{% endblock %}
+
+{% block right_panel %}
+<aside class="right-panel">
+    <div class="panel-widget">
+        <div class="panel-widget-header">
+            <i class="fas fa-fire"></i>
+            <h3>Trending Communities</h3>
+        </div>
+        <div class="community-list">
+            {% for community in popular_communities %}
+            <a href="{% url 'community_chat' community.id %}" class="community-item" style="text-decoration:none;color:inherit;cursor:pointer;">
+                <div class="community-item-avatar" style="background:{% cycle '#E8F4FD' '#FEF3C7' '#D1FAE5' '#FCE4EC' as bg_color %};">
+                    <i class="fas fa-users" style="color:{% cycle '#3B82F6' '#F59E0B' '#10B981' '#EC4899' as icon_color %};"></i>
+                </div>
+                <div class="community-item-info">
+                    <h4>{{ community.name }}</h4>
+                    <p>{{ community.member_count }} members</p>
+                </div>
+                <form method="POST" action="{% url 'communities' %}" style="margin:0;display:inline;" onclick="event.stopPropagation();">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="join_community">
+                    <input type="hidden" name="community_id" value="{{ community.id }}">
+                    <button type="submit" class="join-btn">Join</button>
+                </form>
+            </a>
+            {% empty %}
+            <div class="community-item">
+                <p>No communities yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if user.role != 'student' or user.semester and user.semester >= 5 %}
+    <div class="panel-widget">
+        <div class="panel-widget-header">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Suggested Alumni</h3>
+        </div>
+        <div class="alumni-list" id="alumniList">
+            {% for alumni in alumni_list %}
+            <div class="alumni-item">
+                <div class="alumni-item-avatar">
+                    {% if alumni.profile_pic %}
+                        <img src="{{ alumni.profile_pic.url }}" alt="{{ alumni.get_full_name|default:alumni.cms }}">
+                    {% else %}
+                        <i class="fas fa-user-graduate"></i>
+                    {% endif %}
+                </div>
+                <div class="alumni-item-info">
+                    <h4><a href="#" onclick="showUserQuickView({{ alumni.id }}); return false;" style="color:inherit;text-decoration:none;">{{ alumni.get_full_name|default:alumni.cms }}</a></h4>
+                    <p>{{ alumni.department }}</p>
+                </div>
+                <div class="alumni-buttons">
+                    <form method="POST" action="{% url 'dashboard' %}" style="margin:0;display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="connect">
+                        <input type="hidden" name="user_id" value="{{ alumni.id }}">
+                        <button type="submit" class="connect-btn">Connect</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="alumni-item">
+                <p>No alumni yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if is_senior_student and alumni_announcements %}
+    <div class="panel-widget">
+        <div class="panel-widget-header">
+            <i class="fas fa-bullhorn"></i>
+            <h3>Alumni Career Updates</h3>
+            <span class="gold-badge">NEW</span>
+        </div>
+        <div class="suggestions-list">
+            {% for ann in alumni_announcements %}
+            <div class="suggestion-item" style="cursor:default;">
+                <div class="suggestion-item-avatar" style="background:rgba(212,175,55,0.15);">
+                    <i class="fas fa-user-graduate" style="color:#B8860B;"></i>
+                </div>
+                <div class="suggestion-item-info">
+                    <h4 style="font-size:0.78rem;">{{ ann.title|truncatechars:50 }}</h4>
+                    <p>{{ ann.posted_by.get_full_name|default:ann.posted_by.cms }} • {{ ann.date_posted|date:"M d" }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'alumni_directory' %}" class="pe-link" style="padding:0.5rem 0.4rem;display:inline-block;font-size:0.75rem;">View all alumni <i class="fas fa-arrow-right"></i></a>
+    </div>
+    {% endif %}
+
+    <div class="panel-widget">
+        <div class="panel-widget-header">
+            <i class="fas fa-user-friends"></i>
+            <h3>Suggested Connections</h3>
+        </div>
+        <div class="suggestions-list">
+            {% for su in suggested_users %}
+            <div class="suggestion-item">
+                <div class="suggestion-item-avatar">
+                    {% if su.profile_pic %}
+                        <img src="{{ su.profile_pic.url }}" alt="{{ su.get_full_name|default:su.cms }}">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+                <div class="suggestion-item-info">
+                    <h4><a href="#" onclick="showUserQuickView({{ su.id }}); return false;" style="color:inherit;text-decoration:none;">{{ su.get_full_name|default:su.cms }}</a></h4>
+                    <p>{% if su.semester %}Semester {{ su.semester }}{% endif %} • {{ su.department }}</p>
+                </div>
+                <form method="POST" action="{% url 'dashboard' %}" style="margin:0;display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="follow">
+                    <input type="hidden" name="user_id" value="{{ su.id }}">
+                    <button type="submit" class="follow-btn">Follow</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="suggestion-item">
+                <p>No suggestions yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.likedAnnIds = {{ liked_ann_ids|safe }};
+window.likedCollabIds = {{ liked_collab_ids|safe }};
+window.feedData = [
+    {% for announcement in announcements %}
+    {
+        type: 'announcement',
+        id: {{ announcement.id }},
+        authorId: {{ announcement.posted_by.id }},
+        author: '{{ announcement.get_by_line|escapejs }}',
+        authorDept: '{{ announcement.posted_by.department|escapejs }}',
+        avatar: '{% if announcement.posted_by.profile_pic %}{{ announcement.posted_by.profile_pic.url|escapejs }}{% endif %}',
+        time: '{{ announcement.date_posted|date:"M d, Y" }}',
+        title: '{{ announcement.title|escapejs }}',
+        content: '{{ announcement.content|escapejs }}',
+        likes: {{ announcement.like_count }},
+        comments: {{ announcement.comment_count }},
+        liked: {% if announcement.id in liked_ann_set %}true{% else %}false{% endif %},
+        isPinned: {{ announcement.is_pinned|yesno:'true,false' }}
+    },
+    {% endfor %}
+    {% for post in collab_posts %}
+    {
+        type: 'collaboration',
+        id: {{ post.id }},
+        authorId: {{ post.posted_by.id }},
+        author: '{{ post.posted_by.get_full_name|default:post.posted_by.cms|escapejs }}',
+        authorDept: '{{ post.posted_by.department|escapejs }}',
+        avatar: '{% if post.posted_by.profile_pic %}{{ post.posted_by.profile_pic.url|escapejs }}{% endif %}',
+        time: '{{ post.date_posted|date:"M d, Y" }}',
+        title: '{{ post.title|escapejs }}',
+        content: '{{ post.description|escapejs }}',
+        likes: {{ post.like_count }},
+        comments: {{ post.comment_count }},
+        liked: {% if post.id in liked_collab_set %}true{% else %}false{% endif %}
+    },
+    {% endfor %}
+    {% for note in recent_notes %}
+    {
+        type: 'notes',
+        id: {{ note.id }},
+        authorId: {{ note.uploaded_by.id }},
+        author: '{{ note.uploaded_by.get_full_name|default:note.uploaded_by.cms|escapejs }}',
+        avatar: '{% if note.uploaded_by.profile_pic %}{{ note.uploaded_by.profile_pic.url|escapejs }}{% endif %}',
+        time: '{{ note.upload_date|date:"M d, Y" }}',
+        title: '{{ note.title|escapejs }}',
+        content: '{{ note.description|default:""|escapejs }}',
+        subject: '{{ note.subject|escapejs }}',
+        fileUrl: '{% if note.file %}{{ note.file.url }}{% endif %}'
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+</script>
+<script src="{% static 'assets/js/notes.js' %}"></script>
+{% endblock %}

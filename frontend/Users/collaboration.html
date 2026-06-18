@@ -1,0 +1,85 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Collaboration{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/collaboration.css' %}">{% endblock %}
+{% block nav_center %}<input type="text" placeholder="Search projects..." class="search-input" id="projectSearch">{% endblock %}
+{% block nav_collaboration %}active{% endblock %}
+
+{% block content %}
+<div class="collab-header">
+    <div>
+        <h2>Project Collaboration</h2>
+        <p>Find teammates or post your own project</p>
+    </div>
+    <button class="post-project-btn" id="postProjectBtn">+ Post Project</button>
+</div>
+
+<div class="project-grid" id="projectGrid"></div>
+
+<div class="modal-overlay" id="projectModal">
+    <div class="modal-card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>Post a Project</h3>
+            <button type="button" class="edit-modal-close" id="projectClose">&times;</button>
+        </div>
+        <form id="postProjectForm" method="POST" action="{% url 'collaboration' %}">
+            {% csrf_token %}
+            <div class="edit-modal-body">
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Project Title</label>
+                        <input type="text" name="title" placeholder="e.g. AI Study Assistant" required>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="3" placeholder="Describe your project idea and what you're looking for" required></textarea>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Roles Needed</label>
+                        <input type="text" name="roles_needed" placeholder="e.g. Frontend Dev, Data Scientist" required>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Skills / Tags</label>
+                        <input type="text" name="required_skills" placeholder="e.g. Python, Django, React" required>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="projectCancel">Cancel</button>
+                <button type="submit" class="modal-save">Post Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.projectsData = [
+        {% for post in posts %}
+        {
+            id: {{ post.id }},
+            title: '{{ post.title|escapejs }}',
+            icon: 'PR',
+            postedBy: '{{ post.posted_by.get_full_name|default:post.posted_by.cms|escapejs }}',
+            postedByInfo: '{{ post.posted_by.department|default:"CampNect"|escapejs }}',
+            desc: '{{ post.description|escapejs }}',
+            roles: [{% for role in post.get_roles_list %}'{{ role|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            tags: [{% for skill in post.get_skills_list %}'{{ skill|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            interested: {{ interested_count|default:0 }},
+            chat_url: '{% url "collaboration_chat" post_id=post.id %}',
+            postedById: {{ post.posted_by.id }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    window.interestedIds = {{ interested_ids|safe }};
+</script>
+<script src="{% static 'assets/js/collaboration.js' %}"></script>
+{% endblock %}

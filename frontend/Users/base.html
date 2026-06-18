@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+    {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'assets/css/notifications.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="top-navbar">
+        <div class="nav-left">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="nav-logo">CampNect</h2>
+        </div>
+        <div class="nav-center">{% block nav_center %}{% endblock %}</div>
+        <div class="nav-right">
+            <div class="notification-bell" id="notificationBell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-dropdown-header">
+                        <h4>Notifications</h4>
+                        <button class="mark-all-read-btn" id="markAllRead">Mark all read</button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-dropdown" id="profileDropdown">
+                {% if user.profile_pic %}
+                    <img src="{{ user.profile_pic.url }}" alt="Profile" class="profile-img" id="profileImg" width="40" height="40">
+                {% else %}
+                    <div class="profile-img initial-avatar" id="profileImg" style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:0.85rem;border-radius:50%;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                {% endif %}
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{% url 'profile' %}"><i class="fas fa-user"></i> My Profile</a>
+                    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="profile-card">
+                <div class="profile-card-avatar">
+                    {% if user.profile_pic %}
+                        <img src="{{ user.profile_pic.url }}" alt="Profile" width="60" height="60">
+                    {% else %}
+                        <div class="initial-avatar" style="display:inline-flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:1.3rem;border-radius:50%;width:60px;height:60px;border:2.5px solid #F6F0D6;margin-bottom:0.5rem;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                    {% endif %}
+                </div>
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <p class="profile-badge" data-sem="{% if user.semester and user.semester <= 2 %}1-2{% elif user.semester and user.semester <= 5 %}3-5{% elif user.semester %}6-8{% endif %}">
+                    {% if user.role == 'alumni' %}Alumni - {{ user.department }}{% elif user.semester %}{{ user.department }} - Semester {{ user.semester }}{% else %}{{ user.department }}{% endif %}
+                </p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ connections_count }}</span>
+                        <span class="stat-label">Connections</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ communities_count }}</span>
+                        <span class="stat-label">Communities</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="nav-item {% block nav_dashboard %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'profile' %}" class="nav-item {% block nav_profile %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-user"></i></span>
+                    <span>Profile</span>
+                </a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}
+                <a href="{% url 'alumni_directory' %}" class="nav-item {% block nav_alumni %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-user-graduate"></i></span>
+                    <span>Alumni Directory</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'communities' %}" class="nav-item {% block nav_communities %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span>Communities</span>
+                </a>
+                {% if user.role != 'alumni' %}
+                <a href="{% url 'notes' %}" class="nav-item {% block nav_notes %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span>Notes</span>
+                </a>
+                <a href="{% url 'collaboration' %}" class="nav-item {% block nav_collaboration %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-handshake"></i></span>
+                    <span>Collaboration</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'chat' %}" class="nav-item {% block nav_chat %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-comments"></i></span>
+                    <span>Chat</span>
+                </a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}
+                <a href="{% url 'mentorship' %}" class="nav-item {% block nav_mentorship %}{% endblock %}">
+                    <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
+                    <span>Mentorship</span>
+                </a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <div class="overlay" id="overlay"></div>
+
+        <main class="{% block main_class %}main-feed{% endblock %}" id="mainFeed">
+            {% block content %}{% endblock %}
+        </main>
+        {% block right_panel %}{% endblock %}
+    </div>
+
+    <script>
+        window.currentUser = {
+            id: {{ user.id }},
+            name: '{{ user.first_name|escapejs }} {{ user.last_name|escapejs }}',
+            cms: '{{ user.cms|escapejs }}',
+            email: '{{ user.email|escapejs }}',
+            role: '{{ user.role|escapejs }}',
+            semester: {{ user.semester|default:'null' }},
+            department: '{{ user.department|escapejs }}',
+        };
+        function getCSRFToken() {
+            var m = document.cookie.match(/\bcsrftoken=([^;]+)/);
+            return m ? m[1] : '';
+        }
+    </script>
+    {% include 'user_quick_view.html' %}
+    <script src="{% static 'assets/js/auth.js' %}"></script>
+    <script src="{% static 'assets/js/dashboard.js' %}"></script>
+    <script src="{% static 'assets/js/notifications.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

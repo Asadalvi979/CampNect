@@ -1,0 +1,197 @@
+.mentorship-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.mentorship-header h2 {
+  font-size: 1.5rem;
+  color: #1C3353;
+}
+
+.mentorship-header p {
+  font-size: 0.85rem;
+  color: #8aa99b;
+}
+
+.mentorship-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 16px;
+  border: 1px solid #e0e8e4;
+  width: fit-content;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.mentorship-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.mentor-card {
+  padding: 1rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e0e8e4;
+  transition: box-shadow 0.15s ease;
+}
+
+.mentor-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.mentor-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.mentor-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mentor-avatar.student {
+  background: rgba(37, 99, 235, 0.1);
+  border: 2px solid rgba(37, 99, 235, 0.2);
+}
+
+.mentor-avatar.senior {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.mentor-avatar.alumni {
+  background: rgba(212, 175, 55, 0.15);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.mentor-card-header h4 {
+  font-size: 1rem;
+  color: #1C3353;
+}
+
+.mentor-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 0.15rem;
+}
+
+.mentor-badge.senior {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+}
+
+.mentor-badge.alumni {
+  background: rgba(212, 175, 55, 0.15);
+  color: #B8860B;
+}
+
+.mentor-card p {
+  font-size: 0.85rem;
+  color: #3a5a6e;
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+}
+
+.mentor-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.8rem;
+}
+
+.mentor-skill {
+  background: #F6F0D6;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  color: #1C3353;
+}
+
+.mentor-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e0e8e4;
+}
+
+.mentor-card-footer span {
+  font-size: 0.75rem;
+  color: #8aa99b;
+}
+
+.mentor-connect-btn {
+  background: #1C3353;
+  color: #F6F0D6;
+  border: none;
+  padding: 0.35rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.mentor-connect-btn:hover {
+  background: #284774;
+}
+
+.mentor-connect-btn.connected {
+  background: #10B981;
+}
+
+.mentor-status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.8rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.mentor-status-badge.pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.mentor-status-badge.rejected {
+  background: rgba(185, 28, 28, 0.1);
+  color: #b91c1c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #8aa99b;
+  font-size: 1rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e0e8e4;
+}
+
+@media (max-width: 768px) {
+  .mentorship-tabs {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .mentorship-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Registration</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/register.css' %}">
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="logo-wrapper">
+                <a href="{% url 'index' %}" style="text-decoration: none; color: inherit;"><h1 class="logo">CampNect</h1></a>
+                <p class="tagline">Connect • Collaborate • Grow</p>
+            </div>
+
+            <h2 class="register-title">Create an Account</h2>
+            <p class="subtitle">Join the academic community of Riphah</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form class="register-form" method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="input-group">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" placeholder="Enter your first name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" placeholder="Enter your last name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>CMS Number</label>
+                        <input type="text" name="cms" placeholder="Enter your CMS Number" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="Enter your university email" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="input-group">
+                        <label>Department</label>
+                        <select name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Software Engineering">Software Engineering</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Electrical Engineering">Electrical Engineering</option>
+                            <option value="Business Administration">Business Administration</option>
+                            <option value="Nursing">Nursing</option>
+                            <option value="Pharmacy">D Pharmacy</option>
+                            <option value="English">English</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Semester / Status</label>
+                        <select name="semester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                            <option value="3">3rd Semester</option>
+                            <option value="4">4th Semester</option>
+                            <option value="5">5th Semester</option>
+                            <option value="6">6th Semester</option>
+                            <option value="7">7th Semester</option>
+                            <option value="8">8th Semester</option>
+                            <option value="alumni">Alumni</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Create a strong password" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Confirm Password</label>
+                        <input type="password" name="confirm_password" placeholder="Confirm your password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="register-btn">Register</button>
+
+                <div class="login-redirect">
+                    <p>Already have an account? <a href="{% url 'login' %}">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

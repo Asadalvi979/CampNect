@@ -1,0 +1,304 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Mentorship Chat</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="top-navbar">
+        <div class="nav-left">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <h2 class="nav-logo">CampNect</h2>
+        </div>
+        <div class="nav-center"></div>
+        <div class="nav-right">
+            <div class="profile-dropdown" id="profileDropdown">
+                {% if user.profile_pic %}
+                    <img src="{{ user.profile_pic.url }}" alt="Profile" class="profile-img" id="profileImg">
+                {% else %}
+                    <div class="profile-img" id="profileImg" style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:1.1rem;border-radius:50%;width:40px;height:40px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                {% endif %}
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{% url 'profile' %}"><i class="fas fa-user"></i> My Profile</a>
+                    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="profile-card">
+                <div class="profile-card-avatar">
+                    {% if user.profile_pic %}
+                        <img src="{{ user.profile_pic.url }}" alt="Profile">
+                    {% else %}
+                        <div style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:1.3rem;border-radius:50%;width:60px;height:60px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                    {% endif %}
+                </div>
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <p class="profile-badge" data-sem="{% if user.semester and user.semester <= 2 %}1-2{% elif user.semester and user.semester <= 5 %}3-5{% elif user.semester %}6-8{% endif %}">
+                    {% if user.role == 'alumni' %}Alumni - {{ user.department }}{% elif user.semester %}{{ user.department }} - Semester {{ user.semester }}{% else %}{{ user.department }}{% endif %}
+                </p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ connections_count }}</span>
+                        <span class="stat-label">Connections</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ communities_count }}</span>
+                        <span class="stat-label">Communities</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-home"></i></span><span>Dashboard</span></a>
+                <a href="{% url 'profile' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-user"></i></span><span>Profile</span></a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}<a href="{% url 'alumni_directory' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-user-graduate"></i></span><span>Alumni Directory</span></a>{% endif %}
+                <a href="{% url 'communities' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-users"></i></span><span>Communities</span></a>
+                {% if user.role != 'alumni' %}<a href="{% url 'notes' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-book"></i></span><span>Notes</span></a>{% endif %}
+                {% if user.role != 'alumni' %}<a href="{% url 'collaboration' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-handshake"></i></span><span>Collaboration</span></a>{% endif %}
+                <a href="{% url 'chat' %}" class="nav-item"><span class="nav-icon"><i class="fas fa-comments"></i></span><span>Chat</span></a>
+                {% if user.role != 'student' or user.semester and user.semester >= 5 %}<a href="{% url 'mentorship' %}" class="nav-item active"><span class="nav-icon"><i class="fas fa-graduation-cap"></i></span><span>Mentorship</span></a>{% endif %}
+            </nav>
+        </aside>
+
+        <div class="overlay" id="overlay"></div>
+
+        <main class="chat-main">
+            <div class="conversations-panel">
+                <div class="conversations-header">
+                    <h3>Mentorship</h3>
+                    <a href="{% url 'mentorship' %}" style="color:#8aa99b;text-decoration:none;font-size:0.85rem;">&larr; Back</a>
+                </div>
+                <div style="padding:var(--space-md);display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);border-bottom:1px solid #e0e8e4;">
+                    <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1C3353;">
+                        {% if mentorship.mentor.profile_pic %}
+                            <img src="{{ mentorship.mentor.profile_pic.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.2rem;">{{ mentorship.mentor.get_full_name|default:mentorship.mentor.cms|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <h4 style="margin:0;color:#1C3353;"><a href="#" onclick="showUserQuickView({{ mentorship.mentor.id }}); return false;" style="color:inherit;text-decoration:none;">{{ mentorship.mentor.get_full_name|default:mentorship.mentor.cms }}</a></h4>
+                    <span class="mentor-badge {{ mentorship.mentor.role }}" style="font-size:0.75rem;padding:2px 10px;border-radius:12px;">{{ mentorship.mentor.get_role_display }}</span>
+                    <span style="font-size:0.8rem;color:#8aa99b;">{{ mentorship.mentor.department }}</span>
+                </div>
+            </div>
+
+            <div class="chat-window">
+                <div class="chat-header">
+                    <div class="chat-user-info">
+                        <span class="chat-avatar"><i class="fas fa-graduation-cap"></i></span>
+                        <div>
+                            <h4 id="chatUserName">{{ mentorship.mentor.get_full_name|default:mentorship.mentor.cms }}</h4>
+                            <span class="chat-status" id="chatStatus">{{ mentorship.mentor.department }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    {% for msg in messages %}
+                        <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                            {% if msg.sender != user %}
+                                <div class="msg-avatar">
+                                    {% if msg.sender.profile_pic %}
+                                        <img src="{{ msg.sender.profile_pic.url }}" alt="" class="avatar-img">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="msg-bubble">
+                                {% if msg.sender != user %}
+                                    <div class="msg-sender"><a href="#" onclick="showUserQuickView({{ msg.sender.id }}); return false;" style="color:inherit;text-decoration:none;">{{ msg.sender.get_full_name|default:msg.sender.cms }}</a></div>
+                                {% else %}
+                                    <form method="POST" style="display:inline;" class="msg-delete-form" data-msg-id="{{ msg.id }}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_message">
+                                        <input type="hidden" name="message_id" value="{{ msg.id }}">
+                                        <button type="submit" class="msg-delete-btn" title="Delete" onclick="return confirm('Delete this message?')">&times;</button>
+                                    </form>
+                                {% endif %}
+                                {% if msg.text %}{{ msg.text }}{% endif %}
+                                {% if msg.file %}
+                                    <a href="{{ msg.file.url }}" class="msg-file" target="_blank"><i class="fas fa-paperclip"></i> {{ msg.file.name|slice:"17:" }}</a>
+                                {% endif %}
+                                <span class="message-time">{{ msg.timestamp|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="no-conversation-selected" style="flex:1;display:flex;align-items:center;justify-content:center;">
+                            <p><i class="fas fa-comments"></i> No messages yet. Start your mentorship conversation!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="chat-input-area">
+                    <form method="POST" enctype="multipart/form-data" style="display:flex;gap:var(--space-sm);flex:1;align-items:center;">
+                        {% csrf_token %}
+                        <div class="input-wrapper" style="flex:1;">
+                            <textarea name="text" placeholder="Type a message..." class="chat-input" id="msgInput" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.closest('form').querySelector('.send-btn').click()}"></textarea>
+                            <label class="plus-btn" id="plusBtn">
+                                +
+                                <input type="file" name="file" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" hidden id="fileInput">
+                            </label>
+                        </div>
+                        <button type="submit" class="send-btn" id="sendBtn">Send</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="ctx-menu" id="ctxMenu">
+        <div class="ctx-menu-item" data-action="copy"><i class="fas fa-clipboard"></i> Copy Text</div>
+        <div class="ctx-menu-item danger" data-action="delete"><i class="fas fa-trash-alt"></i> Delete</div>
+        <div class="ctx-menu-sep"></div>
+        <div class="ctx-menu-item" data-action="download"><i class="fas fa-download"></i> Download File</div>
+        <div class="ctx-menu-item" data-action="open"><i class="fas fa-link"></i> Open in New Tab</div>
+    </div>
+
+    <div class="img-lightbox" id="imgLightbox">
+        <div class="img-lightbox-content">
+            <div class="img-lightbox-header">
+                <button class="img-lightbox-download" id="lightboxDownload"><i class="fas fa-download"></i> Download</button>
+                <button class="img-lightbox-close" id="lightboxClose">&times;</button>
+            </div>
+            <div class="img-lightbox-body">
+                <img id="lightboxImg" src="" alt="Preview">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.currentUser = { id: {{ user.id }}, name: '{{ user.first_name|escapejs }} {{ user.last_name|escapejs }}' };
+        window.mentorshipId = {{ mentorship.id }};
+
+        function getCSRFToken() {
+            var m = document.cookie.match(/\bcsrftoken=([^;]+)/);
+            return m ? m[1] : '';
+        }
+
+        var ctxMenu = document.getElementById('ctxMenu');
+        var ctxTarget = null;
+
+        document.addEventListener('contextmenu', function(e) {
+            var msgEl = e.target.closest('.message');
+            if (!msgEl) { ctxMenu.classList.remove('show'); return; }
+            e.preventDefault();
+
+            var msgId = null;
+            var deleteForm = msgEl.querySelector('.msg-delete-form');
+            if (deleteForm) msgId = deleteForm.dataset.msgId;
+
+            var bubble = msgEl.querySelector('.msg-bubble');
+            var text = bubble ? bubble.textContent.replace(/[×✕].*/, '').trim() : '';
+            var fileLink = msgEl.querySelector('.msg-file');
+            var imgPreview = msgEl.querySelector('.msg-img-preview');
+            var fileUrl = fileLink ? fileLink.getAttribute('href') : (imgPreview ? imgPreview.getAttribute('src') : null);
+
+            ctxTarget = { msgId: msgId, fileUrl: fileUrl, text: text };
+
+            document.querySelectorAll('#ctxMenu .ctx-menu-item[data-action]').forEach(function(el) {
+                var act = el.dataset.action;
+                if (act === 'copy') el.style.display = text ? 'flex' : 'none';
+                else if (act === 'delete') el.style.display = msgId ? 'flex' : 'none';
+                else el.style.display = fileUrl ? 'flex' : 'none';
+            });
+
+            var x = e.clientX, y = e.clientY;
+            var mw = window.innerWidth, mh = window.innerHeight;
+            var cw = 180, ch = 200;
+            if (x + cw > mw) x = mw - cw - 8;
+            if (y + ch > mh) y = mh - ch - 8;
+            ctxMenu.style.left = x + 'px'; ctxMenu.style.top = y + 'px';
+            ctxMenu.classList.add('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!ctxMenu.contains(e.target)) ctxMenu.classList.remove('show');
+        });
+
+        document.querySelectorAll('#ctxMenu .ctx-menu-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var action = item.dataset.action;
+                if (action === 'copy' && ctxTarget && ctxTarget.text) {
+                    navigator.clipboard.writeText(ctxTarget.text).catch(function(){});
+                } else if (action === 'delete' && ctxTarget && ctxTarget.msgId) {
+                    if (confirm('Delete this message?')) {
+                        var form = document.createElement('form');
+                        form.method = 'POST'; form.action = '';
+                        form.innerHTML =
+                            '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCSRFToken() + '">' +
+                            '<input type="hidden" name="action" value="delete_message">' +
+                            '<input type="hidden" name="message_id" value="' + ctxTarget.msgId + '">';
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                } else if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
+                    var a = document.createElement('a');
+                    a.href = ctxTarget.fileUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+                } else if (action === 'open' && ctxTarget && ctxTarget.fileUrl) {
+                    window.open(ctxTarget.fileUrl, '_blank');
+                }
+                ctxMenu.classList.remove('show');
+            });
+        });
+    </script>
+    <script>
+        function openImageLightbox(src) {
+            var lb = document.getElementById('imgLightbox');
+            var img = document.getElementById('lightboxImg');
+            var dl = document.getElementById('lightboxDownload');
+            if (!lb || !img) return;
+            img.src = src;
+            img.classList.remove('zoomed');
+            if (dl) dl.setAttribute('href', src);
+            lb.classList.add('show');
+        }
+        document.addEventListener('click', function(e) {
+            var lb = document.getElementById('imgLightbox');
+            if (lb && e.target === lb) { lb.classList.remove('show'); }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { var lb = document.getElementById('imgLightbox'); if (lb) lb.classList.remove('show'); }
+        });
+        function convertImageLinks(container) {
+            if (!container) container = document;
+            var links = container.querySelectorAll('.msg-file');
+            var imgExt = /\.(jpg|jpeg|png|webp|gif)$/i;
+            [].forEach.call(links, function(link) {
+                if (imgExt.test(link.getAttribute('href'))) {
+                    var img = document.createElement('img');
+                    img.src = link.getAttribute('href');
+                    img.className = 'msg-img-preview';
+                    img.alt = '';
+                    img.loading = 'lazy';
+                    img.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openImageLightbox(this.src);
+                    });
+                    link.parentNode.replaceChild(img, link);
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var closeBtn = document.getElementById('lightboxClose');
+            var dlBtn = document.getElementById('lightboxDownload');
+            var lbImg = document.getElementById('lightboxImg');
+            if (closeBtn) closeBtn.addEventListener('click', function() { document.getElementById('imgLightbox').classList.remove('show'); });
+            if (dlBtn) dlBtn.addEventListener('click', function(e) { e.preventDefault(); var a = document.createElement('a'); a.href = document.getElementById('lightboxImg').src; a.download = ''; document.body.appendChild(a); a.click(); a.remove(); });
+            if (lbImg) lbImg.addEventListener('click', function() { this.classList.toggle('zoomed'); });
+            convertImageLinks(document.getElementById('chatMessages'));
+        });
+    </script>
+    {% include 'user_quick_view.html' %}
+    <script src="{% static 'assets/js/auth.js' %}"></script>
+    <script src="{% static 'assets/js/dashboard.js' %}"></script>
+    <script src="{% static 'assets/js/communities.js' %}"></script>
+</body>
+</html>

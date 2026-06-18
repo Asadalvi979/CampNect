@@ -1,0 +1,30 @@
+﻿{% for msg in messages %}
+    <div class="collab-msg {% if msg.sender == user %}sent{% else %}received{% endif %}">
+        {% if msg.sender != user %}
+            <div class="msg-avatar">
+                {% if msg.sender.profile_pic %}
+                    <img src="{{ msg.sender.profile_pic.url }}" alt="" class="avatar-img">
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="msg-bubble">
+            {% if msg.sender != user %}
+                <div class="msg-sender"><a href="#" onclick="showUserQuickView({{ msg.sender.id }}); return false;" style="color:inherit;text-decoration:none;">{{ msg.sender.get_full_name|default:msg.sender.cms }}</a></div>
+            {% else %}
+                <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_message">
+                    <input type="hidden" name="message_id" value="{{ msg.id }}">
+                    <button type="submit" class="msg-delete-btn" title="Delete" onclick="return confirm('Delete this message?')">&times;</button>
+                </form>
+            {% endif %}
+            {% if msg.text %}{{ msg.text }}{% endif %}
+            {% if msg.file %}
+                <a href="{{ msg.file.url }}" class="msg-file" target="_blank"><i class="fas fa-paperclip"></i> {{ msg.file.name|slice:"17:" }}</a>
+            {% endif %}
+            <span class="msg-time">{{ msg.timestamp|time:"H:i" }}</span>
+        </div>
+    </div>
+{% empty %}
+    <div style="text-align:center;color:#8aa99b;padding:var(--space-xl);">No messages yet. Start the discussion!</div>
+{% endfor %}

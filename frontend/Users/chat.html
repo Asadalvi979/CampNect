@@ -1,0 +1,185 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Chat{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/chat.css' %}">{% endblock %}
+{% block nav_center %}<input type="text" placeholder="Search conversations..." class="search-input" id="chatSearch">{% endblock %}
+{% block nav_chat %}active{% endblock %}
+{% block main_class %}chat-main{% endblock %}
+
+{% block content %}
+<div class="conversations-panel">
+    <div class="conversations-header">
+        <h3>Messages</h3>
+        <button class="new-msg-btn" id="newMsgBtn">+ New</button>
+    </div>
+    <div class="conversations-list" id="conversationsList"></div>
+    <div class="suggestions-section" id="suggestionsSection" style="display:none;">
+        <div class="suggestions-header">Suggestions</div>
+        <div class="suggestions-list" id="suggestionsList"></div>
+    </div>
+</div>
+
+<div class="chat-window" id="chatWindow">
+    <div class="chat-header" id="chatHeader">
+        <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i></button>
+        <div class="chat-user-info" id="chatUserInfo" style="cursor:pointer;" data-user-id="">
+            <span class="chat-avatar"><i class="fas fa-user"></i></span>
+            <div>
+                <h4 id="chatUserName">Select a conversation</h4>
+                <span class="chat-status" id="chatStatus">—</span>
+            </div>
+        </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="no-conversation-selected">
+            <p><i class="fas fa-comments"></i> Select a conversation to start chatting</p>
+        </div>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-wrapper">
+            <textarea placeholder="Type a message..." class="chat-input" id="chatInput" disabled rows="1"></textarea>
+            <label class="plus-btn" id="chatPlusBtn">
+                +
+                <input type="file" name="file" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" hidden id="chatFileInput">
+            </label>
+        </div>
+        <button class="send-btn" id="sendBtn" disabled>Send</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="newMsgModal">
+    <div class="modal-card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>New Message</h3>
+            <button type="button" class="edit-modal-close" id="newMsgClose">&times;</button>
+        </div>
+        <div class="edit-modal-body">
+            <div class="edit-field-block" style="width:100%;">
+                <div class="edit-form-group">
+                    <label>Search Users</label>
+                    <input type="text" id="newMsgSearch" placeholder="Type a name..." style="margin-bottom:0;">
+                </div>
+            </div>
+            <div id="newMsgUserList" style="width:100%;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="ctx-menu" id="ctxMenu">
+    <div class="ctx-menu-item" data-action="copy"><i class="fas fa-clipboard"></i> Copy Text</div>
+    <div class="ctx-menu-item danger" data-action="delete"><i class="fas fa-trash-alt"></i> Delete</div>
+    <div class="ctx-menu-sep"></div>
+    <div class="ctx-menu-item" data-action="download"><i class="fas fa-download"></i> Download File</div>
+    <div class="ctx-menu-item" data-action="open"><i class="fas fa-link"></i> Open in New Tab</div>
+</div>
+
+<div class="img-lightbox" id="imgLightbox">
+    <div class="img-lightbox-content">
+        <div class="img-lightbox-header">
+            <button class="img-lightbox-download" id="lightboxDownload"><i class="fas fa-download"></i> Download</button>
+            <button class="img-lightbox-close" id="lightboxClose">&times;</button>
+        </div>
+        <div class="img-lightbox-body">
+            <img id="lightboxImg" src="" alt="Preview">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.conversationsData = {{ conversations_json|safe }};
+    window.allUsersData = {{ all_users_json|safe }};
+
+    var ctxMenu = document.getElementById('ctxMenu');
+    var ctxTarget = null;
+
+    document.addEventListener('contextmenu', function(e) {
+        var msgEl = e.target.closest('.message');
+        if (!msgEl) { ctxMenu.classList.remove('show'); return; }
+        e.preventDefault();
+
+        var msgId = null;
+        var deleteForm = msgEl.querySelector('.msg-delete-form');
+        if (deleteForm) msgId = deleteForm.dataset.msgId;
+
+        var bubble = msgEl.querySelector('.msg-bubble');
+        var text = bubble ? bubble.textContent.replace(/[×✕].*/, '').trim() : '';
+            var fileLink = msgEl.querySelector('.msg-file');
+            var imgPreview = msgEl.querySelector('.msg-img-preview');
+            var fileUrl = fileLink ? fileLink.getAttribute('href') : (imgPreview ? imgPreview.getAttribute('src') : null);
+
+        ctxTarget = { msgId: msgId, fileUrl: fileUrl, text: text };
+
+        document.querySelectorAll('#ctxMenu .ctx-menu-item[data-action]').forEach(function(el) {
+            var act = el.dataset.action;
+            if (act === 'copy') el.style.display = text ? 'flex' : 'none';
+            else if (act === 'delete') el.style.display = msgId ? 'flex' : 'none';
+            else el.style.display = fileUrl ? 'flex' : 'none';
+        });
+
+        var x = e.clientX, y = e.clientY;
+        var mw = window.innerWidth, mh = window.innerHeight;
+        var cw = 180, ch = 200;
+        if (x + cw > mw) x = mw - cw - 8;
+        if (y + ch > mh) y = mh - ch - 8;
+        ctxMenu.style.left = x + 'px'; ctxMenu.style.top = y + 'px';
+        ctxMenu.classList.add('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!ctxMenu.contains(e.target)) ctxMenu.classList.remove('show');
+    });
+
+    document.querySelectorAll('#ctxMenu .ctx-menu-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            var action = item.dataset.action;
+            if (action === 'copy' && ctxTarget && ctxTarget.text) {
+                navigator.clipboard.writeText(ctxTarget.text);
+            } else if (action === 'delete' && ctxTarget && ctxTarget.msgId) {
+                if (confirm('Delete this message?')) {
+                    var form = document.createElement('form');
+                    form.method = 'POST'; form.action = '';
+                    var csrfMatch = document.cookie.match(/\bcsrftoken=([^;]+)/);
+                    var csrfVal = csrfMatch ? csrfMatch[1] : (document.querySelector('input[name="csrfmiddlewaretoken"]') || {}).value || '';
+                    form.innerHTML =
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="' + csrfVal + '">' +
+                        '<input type="hidden" name="action" value="delete_message">' +
+                        '<input type="hidden" name="message_id" value="' + ctxTarget.msgId + '">';
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            } else if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
+                var a = document.createElement('a');
+                a.href = ctxTarget.fileUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+            } else if (action === 'open' && ctxTarget && ctxTarget.fileUrl) {
+                window.open(ctxTarget.fileUrl, '_blank');
+            }
+            ctxMenu.classList.remove('show');
+        });
+    });
+
+    function convertImageLinks(container) {
+        if (!container) container = document;
+        var links = container.querySelectorAll('.msg-file');
+        var imgExt = /\.(jpg|jpeg|png|webp|gif)$/i;
+        [].forEach.call(links, function(link) {
+            if (imgExt.test(link.getAttribute('href'))) {
+                var img = document.createElement('img');
+                img.src = link.getAttribute('href');
+                img.className = 'msg-img-preview';
+                img.alt = '';
+                img.loading = 'lazy';
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openImageLightbox(this.src);
+                });
+                link.parentNode.replaceChild(img, link);
+            }
+        });
+    }
+</script>
+<script src="{% static 'assets/js/chat.js' %}"></script>
+{% endblock %}

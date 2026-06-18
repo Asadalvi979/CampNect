@@ -1,0 +1,62 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Mentorship{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/chat.css' %}"><link rel="stylesheet" href="{% static 'assets/css/mentorship.css' %}">{% endblock %}
+{% block nav_mentorship %}active{% endblock %}
+
+{% block content %}
+{% if user.role == 'student' and user.semester and user.semester < 5 %}
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6rem 2rem;text-align:center;">
+    <i class="fas fa-lock" style="font-size:3rem;color:#d0d8d4;margin-bottom:1.5rem;"></i>
+    <h3 style="color:#1C3353;margin:0 0 0.5rem;">Mentorship is available from Semester 5</h3>
+    <p style="color:#8aa99b;margin:0;">Focus on your studies and connect with alumni when you reach Semester 5.</p>
+</div>
+{% else %}
+<div class="mentorship-header" id="mentorshipHeader">
+    <div>
+        <h2>Mentorship</h2>
+        <p>Connect, guide, and grow together</p>
+    </div>
+    {% if user.role != 'alumni' %}
+    <button class="new-msg-btn" id="newMentorshipBtn" style="margin-left:auto;">+ New</button>
+    {% endif %}
+</div>
+
+<div class="mentorship-tabs" id="mentorshipTabs">
+    {% if user.role != 'alumni' %}
+    <button class="tab-btn active" data-filter="available">Available Mentors</button>
+    {% endif %}
+    <button class="tab-btn {% if user.role == 'alumni' %}active{% endif %}" data-filter="requests">My Requests</button>
+    <button class="tab-btn" data-filter="sessions">Active Sessions</button>
+</div>
+
+<div class="mentorship-grid" id="mentorshipGrid"></div>
+{% endif %}
+
+<div class="modal-overlay" id="newMentorshipModal">
+    <div class="modal-card edit-modal-card" style="max-width:450px;">
+        <div class="edit-modal-header">
+            <h3>Start Mentorship</h3>
+            <button type="button" class="edit-modal-close" id="newMentorshipClose">&times;</button>
+        </div>
+        <div class="edit-modal-body">
+            <div class="edit-field-block" style="width:100%;">
+                <div class="edit-form-group">
+                    <label>Search Mentors</label>
+                    <input type="text" id="newMentorshipSearch" placeholder="Type a name..." style="margin-bottom:0;">
+                </div>
+            </div>
+            <div id="newMentorshipList" style="width:100%;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.mentorsData = {{ mentors_json|safe }};
+    window.mentorshipRequestsData = {{ mentorship_requests_json|safe }};
+</script>
+<script src="{% static 'assets/js/mentorship.js' %}"></script>
+{% endblock %}

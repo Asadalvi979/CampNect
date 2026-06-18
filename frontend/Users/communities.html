@@ -1,0 +1,119 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Communities{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/communities.css' %}">{% endblock %}
+{% block nav_communities %}active{% endblock %}
+
+{% block content %}
+<div class="cm-top">
+    <div class="cm-top-left">
+        <h1>Communities</h1>
+        <p>Discover and join academic communities.</p>
+    </div>
+    <button class="cm-create-btn" id="createCommunityBtn">+ New Community</button>
+</div>
+
+<div class="cm-search">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Search communities..." id="communitySearch">
+</div>
+
+<div class="cm-tabs">
+    <button class="cat-tab active" data-cat="all">All</button>
+    <button class="cat-tab" data-cat="cs">Computer Science</button>
+    <button class="cat-tab" data-cat="se">Software Engineering</button>
+    <button class="cat-tab" data-cat="ai">AI &amp; ML</button>
+    <button class="cat-tab" data-cat="general">General</button>
+</div>
+
+<div class="communities-grid" id="communitiesGrid"></div>
+
+<div class="modal-overlay" id="createModal">
+    <div class="modal-card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>Create New Community</h3>
+            <button type="button" class="edit-modal-close" id="createClose">&times;</button>
+        </div>
+        <form id="createCommunityForm" method="POST" action="{% url 'communities' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div class="edit-modal-body">
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Community Name</label>
+                        <input type="text" name="name" placeholder="e.g. Game Dev Club" required>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Category</label>
+                        <select name="category" required>
+                            <option value="cs">Computer Science</option>
+                            <option value="se">Software Engineering</option>
+                            <option value="ai">AI & ML</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Who can send messages?</label>
+                        <select name="message_permission" required>
+                            <option value="all_members">All Members</option>
+                            <option value="admins_only">Admins Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="3" placeholder="What is this community about?" required></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="createCancel">Cancel</button>
+                <button type="submit" class="modal-save">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="leaveConfirmModal">
+    <div class="modal-card edit-modal-card" style="max-width:360px;">
+        <div class="edit-modal-header">
+            <h3>Leave Community?</h3>
+            <button type="button" class="edit-modal-close" id="leaveCloseBtn">&times;</button>
+        </div>
+        <div class="edit-modal-body">
+            <p style="margin:0;color:#1C3353;font-size:var(--fs-base);">Are you sure you want to leave this community? You'll need to be re-added or re-join to participate again.</p>
+        </div>
+        <div class="edit-modal-footer" style="gap:10px;">
+            <button type="button" class="modal-cancel" id="leaveCancelBtn" style="flex:1;">Cancel</button>
+            <button type="button" class="modal-save" id="leaveConfirmBtn" style="flex:1;background:#cc4444;">Leave</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.communityData = [
+        {% for community in communities %}
+        {
+            id: {{ community.id }},
+            name: '{{ community.name|escapejs }}',
+            category: '{{ community.category|default:"general" }}',
+            icon: 'CN',
+            members: {{ community.member_count }},
+            desc: '{{ community.description|default:"No description provided."|escapejs }}',
+            joined: {% if community in my_communities %}true{% else %}false{% endif %},
+            chat_url: '{% url "community_chat" community.id %}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    window.joinCommunityUrl = '{% url "communities" %}';
+</script>
+<script src="{% static 'assets/js/communities.js' %}"></script>
+{% endblock %}

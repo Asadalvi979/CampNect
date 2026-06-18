@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %} - {{ profile_user.get_full_name|default:profile_user.cms }}{% endblock %}
+{% block main_class %}main-feed profile-page{% endblock %}
+
+{% block content %}
+<div class="up-card">
+    <div class="up-card-header">
+        <div class="up-avatar">
+            {% if profile_user.profile_pic %}
+                <img src="{{ profile_user.profile_pic.url }}" alt="{{ profile_user.get_full_name }}">
+            {% else %}
+                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1C3353,#3a7a5e);color:#F6F0D6;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;border:3px solid #F6F0D6;">{{ profile_user.get_full_name|default:profile_user.cms|slice:":1"|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="up-info">
+            <h1>{{ profile_user.get_full_name|default:profile_user.cms }}</h1>
+            <div class="up-badges">
+                <span class="up-role role-{{ profile_user.role }}">{{ profile_user.get_role_display }}</span>
+                <span class="up-dept">{{ profile_user.department }}</span>
+                {% if profile_user.semester %}
+                <span class="up-sem">Semester {{ profile_user.semester }}</span>
+                {% endif %}
+            </div>
+            <p class="up-cms"><i class="fas fa-hashtag"></i> {{ profile_user.cms }} <i class="fas fa-university" style="margin-left:1rem;"></i> Riphah Sahiwal</p>
+            <form method="POST" action="{% url 'dashboard' %}" class="up-connect-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="connect">
+                <input type="hidden" name="user_id" value="{{ profile_user.id }}">
+                <button type="submit" class="up-connect-btn"><i class="fas fa-user-plus"></i> Connect</button>
+            </form>
+        </div>
+    </div>
+    <div class="up-stats">
+        <div class="up-stat">
+            <span class="up-stat-num">{{ connections_count }}</span>
+            <span class="up-stat-lbl">Connections</span>
+        </div>
+        <div class="up-stat">
+            <span class="up-stat-num">{{ communities_count }}</span>
+            <span class="up-stat-lbl">Communities</span>
+        </div>
+        <div class="up-stat">
+            <span class="up-stat-num">{{ projects_count }}</span>
+            <span class="up-stat-lbl">Projects</span>
+        </div>
+        <div class="up-stat">
+            <span class="up-stat-num">{{ notes_count }}</span>
+            <span class="up-stat-lbl">Notes Shared</span>
+        </div>
+    </div>
+    <div class="up-body">
+        <div class="up-section">
+            <h3><i class="fas fa-info-circle"></i> About</h3>
+            <p>{{ profile_user.bio|default:'No bio yet.' }}</p>
+        </div>
+        <div class="up-section">
+            <h3><i class="fas fa-graduation-cap"></i> Academic Info</h3>
+            <div class="up-info-grid">
+                <div class="up-info-item"><span class="up-info-lbl">Department</span><span>{{ profile_user.department }}</span></div>
+                {% if profile_user.semester %}<div class="up-info-item"><span class="up-info-lbl">Semester</span><span>{{ profile_user.semester }}</span></div>{% endif %}
+                <div class="up-info-item"><span class="up-info-lbl">CMS</span><span>{{ profile_user.cms }}</span></div>
+                <div class="up-info-item"><span class="up-info-lbl">Email</span><span>{{ profile_user.email }}</span></div>
+            </div>
+        </div>
+        {% if profile_user.role == 'alumni' %}
+        <div class="up-section">
+            <h3><i class="fas fa-briefcase"></i> Professional Info</h3>
+            <div class="up-info-grid">
+                {% if profile_user.graduation_year %}<div class="up-info-item"><span class="up-info-lbl">Graduation</span><span>Class of {{ profile_user.graduation_year }}</span></div>{% endif %}
+                {% if profile_user.current_company %}<div class="up-info-item"><span class="up-info-lbl">Company</span><span>{{ profile_user.current_company }}</span></div>{% endif %}
+                {% if profile_user.current_position %}<div class="up-info-item"><span class="up-info-lbl">Position</span><span>{{ profile_user.current_position }}</span></div>{% endif %}
+                {% if profile_user.industry %}<div class="up-info-item"><span class="up-info-lbl">Industry</span><span>{{ profile_user.industry }}</span></div>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% if profile_user.skills %}
+        <div class="up-section">
+            <h3><i class="fas fa-bolt"></i> Skills</h3>
+            <div class="up-skills">
+                {% for skill in profile_user.skills|split:"," %}
+                <span class="skill-tag">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.up-card {
+    background:#fff;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;max-width:680px;margin:0 auto;
+}
+.up-card-header {
+    display:flex;align-items:center;gap:1.5rem;padding:2rem 2rem 1.5rem;
+}
+.up-avatar { flex-shrink:0; }
+.up-info h1 { margin:0 0 0.3rem;font-size:1.5rem;color:#1C3353; }
+.up-badges { display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem; }
+.up-role, .up-dept, .up-sem { font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:9999px;font-weight:600; }
+.up-role { background:#1C3353;color:#F6F0D6; }
+.up-dept { background:#e8eef0;color:#2d5a4a; }
+.up-sem { background:#f0f2f5;color:#6b7a73; }
+.up-cms { font-size:0.82rem;color:#8aa99b;margin:0 0 0.6rem; }
+.up-connect-form { margin:0; }
+.up-connect-btn { background:#1C3353;color:#fff;border:none;padding:0.45rem 1.2rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s; }
+.up-connect-btn:hover { background:#2a4a6e; }
+.up-stats { display:flex;border-top:1px solid #e8eef0;border-bottom:1px solid #e8eef0;background:#fafcfb; }
+.up-stat { flex:1;padding:1rem;text-align:center;border-right:1px solid #e8eef0; }
+.up-stat:last-child { border-right:none; }
+.up-stat-num { display:block;font-size:1.3rem;font-weight:700;color:#1C3353; }
+.up-stat-lbl { font-size:0.72rem;color:#8aa99b; }
+.up-body { padding:1.5rem 2rem 2rem; }
+.up-section { margin-bottom:1.5rem; }
+.up-section:last-child { margin-bottom:0; }
+.up-section h3 { font-size:0.95rem;color:#1C3353;margin:0 0 0.6rem;display:flex;align-items:center;gap:0.4rem; }
+.up-section h3 i { color:#3a7a5e; }
+.up-section p { margin:0;font-size:0.88rem;color:#3a4a43;line-height:1.6; }
+.up-info-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.6rem; }
+.up-info-item { display:flex;flex-direction:column;gap:0.15rem;padding:0.4rem 0.6rem;background:#f4f7f6;border-radius:8px; }
+.up-info-lbl { font-size:0.7rem;color:#8aa99b;text-transform:uppercase;letter-spacing:0.3px;font-weight:600; }
+.up-info-item span:last-child { font-size:0.85rem;color:#1C3353;font-weight:500; }
+.up-skills { display:flex;flex-wrap:wrap;gap:0.4rem; }
+@media (max-width:600px){.up-card-header{flex-direction:column;align-items:center;text-align:center;}.up-info{display:flex;flex-direction:column;align-items:center;}.up-stats{flex-wrap:wrap;}.up-stat{flex:1 0 45%;}.up-info-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}

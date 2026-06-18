@@ -1,0 +1,309 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <title>CampNect - Riphah Academic Collaboration Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">CampNect</h1>
+
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#why">Why us?</a></li>
+                <li><a href="#eligibility">Eligibility</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+
+            <a href="{% url 'login' %}">Login</a>
+            <!-- <a href="{% url 'register' %}">Register</a> -->
+        </nav>
+    </header>
+
+    <section class="hero-section" id="home">
+        <img src="{% static 'images/Riphah-Logo-2-scaled.webp' %}" height="80px" width="230px" alt="">
+        <div class="center-logo">
+            <h1>Riphah International University,<br> Sahiwal</h1>
+        </div>
+
+        <div class="hero-content">
+            <p>
+                Riphah International University, Sahiwal Campus is committed to providing
+                quality education and fostering academic excellence. To strengthen communication, 
+                collaboration, and knowledge sharing among students, seniors, and alumni, 
+                CampNect has been developed as a centralized platform where users can connect,
+                share resources, participate in academic discussions, and build meaningful professional networks within the university
+                community.
+            </p>
+        </div>
+
+        <div class="corner-image">
+            <img src="{% static 'images/logo.png' %}" alt="CampNect Icon">
+        </div>
+    </section>
+
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Key Features of CampNect</h2>
+                <p>Everything students need to connect, collaborate, and succeed in one platform.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-book"></i></div>
+                    <h3>Notes Sharing</h3>
+                    <div class="feature-description">
+                        <p>Upload, organize, and access academic notes and study materials from fellow students.</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3>Real-Time Messaging</h3>
+                    <div class="feature-description">
+                        <p>Communicate instantly with classmates, seniors, and authorized alumni members.</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+                    <h3>Project Collaboration</h3>
+                    <div class="feature-description">
+                        <p>Find teammates, share project ideas, and work together on academic initiatives.</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h3>Academic Communities</h3>
+                    <div class="feature-description">
+                        <p>Join department and interest-based communities to discuss ideas and stay connected.</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <h3>Alumni Connections</h3>
+                    <div class="feature-description">
+                        <p>Build professional relationships and seek guidance from experienced graduates.</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-bullhorn"></i></div>
+                    <h3>Announcements</h3>
+                    <div class="feature-description">
+                        <p>Stay updated with academic notices, university events, and important deadlines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-section" id="why">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why CampNect?</h2>
+                <p>Bridging the gap between academic needs and digital solutions</p>
+            </div>
+
+            <div class="problems-solutions-grid">
+                <div class="problems-box">
+                    <div class="box-header">
+                        <h3>What Students Face Today</h3>
+                    </div>
+                    <ul class="problem-list">
+                        <li>
+                            <span class="problem-icon"><i class="fas fa-phone"></i></span>
+                            <div>
+                                <strong>Multiple Disconnected Platforms</strong>
+                                <p>Students use WhatsApp, Google Drive, LMS, and emails separately — scattered resources and missed updates.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="problem-icon"><i class="fas fa-volume-mute"></i></span>
+                            <div>
+                                <strong>Communication Gaps</strong>
+                                <p>No structured way to reach seniors for guidance or collaborate with peers on projects.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="problem-icon"><i class="fas fa-file"></i></span>
+                            <div>
+                                <strong>Scattered Study Resources</strong>
+                                <p>Notes and materials are shared randomly, often lost in chats or forgotten folders.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="problem-icon"><i class="fas fa-question-circle"></i></span>
+                            <div>
+                                <strong>Limited Networking Opportunities</strong>
+                                <p>Students miss out on mentorship, alumni connections, and project collaborations.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="solutions-box">
+                    <div class="box-header">
+                        <h3>How CampNect Solves It</h3>
+                    </div>
+                    <ul class="solution-list">
+                        <li>
+                            <span class="solution-icon"><i class="fas fa-crosshairs"></i></span>
+                            <div>
+                                <strong>All-in-One Platform</strong>
+                                <p>Chat, resources, announcements, and collaboration — everything under one roof.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="solution-icon"><i class="fas fa-wifi"></i></span>
+                            <div>
+                                <strong>Semester-Based Communication</strong>
+                                <p>Structured access: Juniors connect with seniors, seniors guide juniors, alumni mentor all.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="solution-icon"><i class="fas fa-folder"></i></span>
+                            <div>
+                                <strong>Centralized Resource Hub</strong>
+                                <p>Upload, download, and organize study materials by semester and subject.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="solution-icon"><i class="fas fa-globe"></i></span>
+                            <div>
+                                <strong>Built-in Alumni Network</strong>
+                                <p>Direct mentorship, career guidance, and industry insights from graduates.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr>
+    </section>
+
+    <section class="eligibility-section" id="eligibility">
+        <div class="container">
+            <div class="section-header">
+                <h2>Eligibility & Access Requirements</h2>
+                <p>Who Can Join CampNect?</p>
+            </div>
+
+            <div class="eligibility-wrapper">
+                <div class="eligibility-left">
+                    <ul class="requirements-list">
+                        <li>
+                            <span class="req-icon"><i class="fas fa-graduation-cap"></i></span>
+                            <div>
+                                <strong>Must Be a Riphah Student</strong>
+                                <span>Users must possess a valid CMS Number issued by Riphah International University.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="req-icon"><i class="fas fa-check-circle"></i></span>
+                            <div>
+                                <strong>Verified Registration</strong>
+                                <span>All accounts must be registered using authentic university information for identity verification.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="req-icon"><i class="fas fa-book"></i></span>
+                            <div>
+                                <strong>Academic Use Only</strong>
+                                <span>The platform is intended for academic collaboration, networking, knowledge sharing, and professional development.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="req-icon"><i class="fas fa-handshake"></i></span>
+                            <div>
+                                <strong>Respect Community Guidelines</strong>
+                                <span>Users must communicate respectfully and avoid abusive, misleading, or inappropriate content.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="req-icon"><i class="fas fa-graduation-cap"></i><i class="fas fa-star"></i></span>
+                            <div>
+                                <strong>Alumni Access</strong>
+                                <span>Alumni members can join the platform to mentor students, share experiences, and provide career guidance.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="req-icon"><i class="fas fa-lock"></i></span>
+                            <div>
+                                <strong>Secure Communication</strong>
+                                <span>Access to certain features and communication channels depends on the user's academic level and platform permissions.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="eligibility-right">
+                    <img src="{% static 'images/right image.png' %}" alt="CampNect Access & Eligibility">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer" id="contact">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <h3 class="footer-logo">CampNect</h3>
+                    <p class="footer-about">
+                        Empowering Riphah International University, Sahiwal Campus with a centralized academic collaboration platform.
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#why">Why CampNect</a></li>
+                        <li><a href="#eligibility">Eligibility</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-envelope"></i></span> support@campnect.com</a></li>
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-phone"></i></span> Contact via university directory</a></li>
+                    </ul>
+                    <div class="social-icons">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-camera"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-link"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 CampNect. All Rights Reserved. | Designed for Riphah International University</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

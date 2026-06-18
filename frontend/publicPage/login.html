@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Login</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/login.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-wrapper">
+                <a href="{% url 'index' %}" style="text-decoration: none; color: inherit;"><h1 class="logo">CampNect</h1></a>
+                <p class="tagline">Connect • Collaborate • Grow</p>
+            </div>
+
+            <h2 class="welcome-text">Welcome Back!</h2>
+            <p class="subtitle">Sign in to your account</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'error' in message.tags %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form class="login-form" method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label>CMS Number</label>
+                    <input type="text" name="cms" placeholder="Enter your CMS Number" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="login-btn">Login</button>
+
+                <div class="form-footer">
+                    <a href="{% url 'forgot_password' %}" class="forgot-link">Forgot Password?</a>
+                    <p class="signup-text">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

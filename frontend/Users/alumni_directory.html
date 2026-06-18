@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Alumni Directory{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/alumni_directory.css' %}">{% endblock %}
+{% block nav_center %}
+<div class="search-wrapper">
+    <i class="fas fa-search search-icon"></i>
+    <input type="text" placeholder="Search alumni by name, company, or skill..." class="search-input" id="alumniSearchInput">
+</div>
+{% endblock %}
+{% block nav_alumni %}active{% endblock %}
+{% block main_class %}main-feed alumni-directory-page{% endblock %}
+
+{% block content %}
+{% if user.role == 'student' and user.semester and user.semester < 5 %}
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6rem 2rem;text-align:center;">
+    <i class="fas fa-lock" style="font-size:3rem;color:#d0d8d4;margin-bottom:1.5rem;"></i>
+    <h3 style="color:#1C3353;margin:0 0 0.5rem;">Alumni Directory is available from Semester 5</h3>
+    <p style="color:#8aa99b;margin:0;">You can access alumni and mentorship features when you reach Semester 5.</p>
+</div>
+{% else %}
+<div class="ad-header">
+    <div>
+        <h2>Alumni Directory</h2>
+        <p>Connect with alumni, explore careers, and find mentors</p>
+    </div>
+
+</div>
+
+<div class="ad-filters" id="adFilters">
+    <div class="ad-filter-group">
+        <label>Department</label>
+        <select id="filterDepartment">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+            <option value="{{ dept }}">{{ dept }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="ad-filter-group">
+        <label>Industry</label>
+        <select id="filterIndustry">
+            <option value="">All Industries</option>
+            {% for ind in industries %}
+            <option value="{{ ind }}">{{ ind }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="ad-filter-group">
+        <label>Graduation Year</label>
+        <select id="filterGradYear">
+            <option value="">All Years</option>
+            {% for year in grad_years %}
+            <option value="{{ year }}">{{ year }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="ad-filter-clear" id="clearFilters">Clear Filters</button>
+</div>
+
+<div class="ad-results-header">
+    <span id="resultCount">0 alumni found</span>
+</div>
+
+<div class="ad-grid" id="alumniGrid"></div>
+
+<div class="ad-empty" id="alumniEmpty" style="display:none;">
+    <i class="fas fa-user-graduate"></i>
+    <h3>No alumni found</h3>
+    <p>Try adjusting your search or filters</p>
+</div>
+{% endif %}
+
+{% if user.role != 'student' or user.semester and user.semester >= 5 %}
+<div class="modal-overlay" id="mentorshipModal">
+    <div class="modal-card edit-modal-card" style="max-width:500px;">
+        <div class="edit-modal-header">
+            <h3>Request Mentorship</h3>
+            <button type="button" class="edit-modal-close" id="mentorshipModalClose">&times;</button>
+        </div>
+        <form id="mentorshipRequestForm">
+            <input type="hidden" name="alumni_id" id="mentorshipAlumniId">
+            <div class="edit-modal-body">
+                <div style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;background:#f4f7f6;border-radius:10px;border:1px solid #e8eeec;margin-bottom:8px;">
+                    <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1C3353;display:flex;align-items:center;justify-content:center;" id="mentorshipModalAvatar">
+                        <i class="fas fa-user-graduate" style="color:#F6F0D6;font-size:1.2rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin:0;font-size:0.9rem;color:#1C3353;" id="mentorshipModalName">Alumni Name</h4>
+                        <span style="font-size:0.75rem;color:#8aa99b;" id="mentorshipModalDept">Department</span>
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Subject</label>
+                        <input type="text" name="subject" id="mentorshipSubject" placeholder="e.g. Web Development Career Guidance" required>
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Reason</label>
+                        <textarea name="reason" id="mentorshipReason" rows="4" placeholder="Explain why you want mentorship from this alumni..." required style="resize:vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="mentorshipModalCancel">Cancel</button>
+                <button type="submit" class="modal-save">Send Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal-overlay" id="alumniViewModal">
+    <div class="modal-card" style="max-width:680px;padding:0;overflow:visible;background:transparent;box-shadow:none;">
+        <div class="uv-card">
+            <button type="button" class="uv-close" id="alumniViewClose">&times;</button>
+            <div class="uv-card-header">
+                <div class="uv-avatar" id="uvAvatar"></div>
+                <div class="uv-info">
+                    <h1 id="uvName"></h1>
+                    <div class="uv-badges" id="uvBadges"></div>
+                    <p class="uv-cms" id="uvCms"></p>
+                    <div id="uvActions"></div>
+                </div>
+            </div>
+            <div class="uv-stats" id="uvStats"></div>
+            <div class="uv-body" id="uvBody"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.uv-card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.15);overflow:hidden;position:relative;max-height:80vh;overflow-y:auto;}
+.uv-close{position:absolute;top:12px;right:12px;background:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:1.3rem;cursor:pointer;color:#8aa99b;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,0.1);transition:all 0.15s;}
+.uv-close:hover{background:#f0f2f5;color:#1C3353;}
+.uv-card-header{display:flex;align-items:center;gap:1.5rem;padding:2rem 2rem 1.5rem;}
+.uv-avatar{flex-shrink:0;}
+.uv-avatar img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #F6F0D6;}
+.uv-info h1{margin:0 0 0.3rem;font-size:1.5rem;color:#1C3353;}
+.uv-badges{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;}
+.uv-badge{font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:9999px;font-weight:600;}
+.uv-badge.role{background:#1C3353;color:#F6F0D6;}
+.uv-badge.dept{background:#e8eef0;color:#2d5a4a;}
+.uv-badge.sem{background:#f0f2f5;color:#6b7a73;}
+.uv-cms{font-size:0.82rem;color:#8aa99b;margin:0 0 0.6rem;}
+.uv-connect-btn{background:#1C3353;color:#fff;border:none;padding:0.45rem 1.2rem;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s;}
+.uv-connect-btn:hover{background:#2a4a6e;}
+.uv-stats{display:flex;border-top:1px solid #e8eef0;border-bottom:1px solid #e8eef0;background:#fafcfb;}
+.uv-stat{flex:1;padding:1rem;text-align:center;border-right:1px solid #e8eef0;}
+.uv-stat:last-child{border-right:none;}
+.uv-stat-num{display:block;font-size:1.3rem;font-weight:700;color:#1C3353;}
+.uv-stat-lbl{font-size:0.72rem;color:#8aa99b;}
+.uv-body{padding:1.5rem 2rem 2rem;}
+.uv-section{margin-bottom:1.5rem;}
+.uv-section:last-child{margin-bottom:0;}
+.uv-section h3{font-size:0.95rem;color:#1C3353;margin:0 0 0.6rem;display:flex;align-items:center;gap:0.4rem;}
+.uv-section h3 i{color:#3a7a5e;}
+.uv-section p{margin:0;font-size:0.88rem;color:#3a4a43;line-height:1.6;}
+.uv-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
+.uv-info-item{display:flex;flex-direction:column;gap:0.15rem;padding:0.4rem 0.6rem;background:#f4f7f6;border-radius:8px;}
+.uv-info-lbl{font-size:0.7rem;color:#8aa99b;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;}
+.uv-info-item span:last-child{font-size:0.85rem;color:#1C3353;font-weight:500;}
+.uv-skills{display:flex;flex-wrap:wrap;gap:0.4rem;}
+@media(max-width:600px){.uv-card-header{flex-direction:column;align-items:center;text-align:center;}.uv-info{display:flex;flex-direction:column;align-items:center;}.uv-stats{flex-wrap:wrap;}.uv-stat{flex:1 0 45%;}.uv-info-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="modal-overlay" id="professionalModal">
+    <div class="modal-card edit-modal-card" style="max-width:500px;">
+        <div class="edit-modal-header">
+            <h3>Update Professional Info</h3>
+            <button type="button" class="edit-modal-close" id="professionalModalClose">&times;</button>
+        </div>
+        <form id="professionalInfoForm">
+            <div class="edit-modal-body">
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Graduation Year</label>
+                        <input type="number" name="graduation_year" id="profGradYear" placeholder="e.g. 2024" min="1900" max="2100">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Current Company</label>
+                        <input type="text" name="current_company" id="profCompany" placeholder="e.g. Google">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Current Position</label>
+                        <input type="text" name="current_position" id="profPosition" placeholder="e.g. Software Engineer">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Industry</label>
+                        <input type="text" name="industry" id="profIndustry" placeholder="e.g. Technology">
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="professionalModalCancel">Cancel</button>
+                <button type="submit" class="modal-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.graduation_year = {{ user.graduation_year|default:'null' }};
+    window.current_company = '{{ user.current_company|escapejs }}';
+    window.current_position = '{{ user.current_position|escapejs }}';
+    window.industry = '{{ user.industry|escapejs }}';
+</script>
+<script src="{% static 'assets/js/alumni_directory.js' %}"></script>
+{% endblock %}

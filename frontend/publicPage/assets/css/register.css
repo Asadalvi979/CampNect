@@ -1,0 +1,191 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #F6F0D6;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-image: url('../../images/chatgpt-image.png');
+
+    background-size: cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment: fixed;
+}
+
+.register-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.register-card {
+    background: white;
+    max-width: 550px;
+    width: 100%;
+    padding: 2rem 2rem 2.5rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+}
+
+.logo-wrapper {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    font-size: var(--fs-3xl);
+    font-weight: 800;
+    background: linear-gradient(135deg, #1C3353, #2c5a7a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.3rem;
+}
+
+.tagline {
+    font-size: var(--fs-sm);
+    color: #5a7a8c;
+    letter-spacing: 1px;
+}
+
+.register-title {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: #1C3353;
+    text-align: center;
+    margin-bottom: 0.3rem;
+}
+
+.subtitle {
+    color: #5a7a8c;
+    font-size: var(--fs-md);
+    text-align: center;
+    margin-bottom: 1.8rem;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    color: #1C3353;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #F6F0D6;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: var(--fs-md);
+    font-weight: 500;
+    color: #1C3353;
+    margin-bottom: 0.4rem;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1.5px solid #e0e8e4;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-md);
+    font-family: inherit;
+    transition: var(--transition-base);
+    background: #fafafa;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #1C3353;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(28, 51, 83, 0.1);
+}
+
+.register-btn {
+    width: 100%;
+    background: #1C3353;
+    color: #F6F0D6;
+    border: none;
+    padding: 0.9rem;
+    border-radius: var(--radius-lg);
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+    margin-top: 0.5rem;
+}
+
+.register-btn:hover {
+    background: #2c4a6e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(28, 51, 83, 0.2);
+}
+
+.login-redirect {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.login-redirect p {
+    font-size: var(--fs-md);
+    color: #5a7a8c;
+}
+
+.login-redirect a {
+    color: #1e6f5c;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-redirect a:hover {
+    color: #1C3353;
+    text-decoration: underline;
+}
+
+@media (max-width: 550px) {
+    body {
+        padding: 1rem;
+    }
+
+    .register-card {
+        padding: 1.5rem;
+    }
+
+    .logo {
+        font-size: var(--fs-2xl);
+    }
+
+    .register-title {
+        font-size: var(--fs-xl);
+    }
+
+    .section-title {
+        font-size: var(--fs-base);
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 0.7rem 0.9rem;
+    }
+
+    .register-btn {
+        padding: 0.7rem;
+    }
+}

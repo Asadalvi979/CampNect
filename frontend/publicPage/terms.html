@@ -1,0 +1,146 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Terms of Service</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/pages.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">CampNect</h1>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}#home">Home</a></li>
+                <li><a href="{% url 'index' %}#features">Features</a></li>
+                <li><a href="{% url 'index' %}#why">Why us?</a></li>
+                <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                <li><a href="{% url 'index' %}#contact">Contact</a></li>
+            </ul>
+            <a href="{% url 'login' %}">Login</a>
+        </nav>
+    </header>
+
+    <div class="page-header">
+        <h1>Terms of Service</h1>
+        <p>Guidelines and rules for using the CampNect platform.</p>
+    </div>
+
+    <div class="page-content">
+        <div class="page-section">
+            <div class="legal-text">
+                <p><strong>Last Updated:</strong> June 2026</p>
+
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using CampNect, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our platform. These terms constitute a legally binding agreement between you and CampNect.</p>
+
+                <h3>2. Eligibility</h3>
+                <p>To use CampNect, you must:</p>
+                <ul>
+                    <li>Be a currently enrolled student at Riphah International University, Sahiwal Campus with a valid CMS number, OR be a verified alumnus of the institution.</li>
+                    <li>Be at least 18 years of age or have parental consent.</li>
+                    <li>Provide accurate, current, and complete registration information.</li>
+                    <li>Maintain the security of your account credentials.</li>
+                </ul>
+
+                <h3>3. User Responsibilities</h3>
+                <p>As a user of CampNect, you agree to:</p>
+                <ul>
+                    <li>Use the platform exclusively for academic collaboration, networking, and knowledge sharing.</li>
+                    <li>Communicate respectfully with all members of the community.</li>
+                    <li>Not upload, share, or distribute any content that is abusive, harassing, defamatory, obscene, or otherwise inappropriate.</li>
+                    <li>Not impersonate any person or entity or misrepresent your affiliation with any person or entity.</li>
+                    <li>Not attempt to gain unauthorized access to any part of the platform or other users' accounts.</li>
+                    <li>Not use the platform for commercial purposes, including advertising or solicitation.</li>
+                    <li>Respect the intellectual property rights of others.</li>
+                </ul>
+
+                <h3>4. Content Guidelines</h3>
+                <p>All content shared on CampNect must:</p>
+                <ul>
+                    <li>Be related to academic study, university life, or professional development.</li>
+                    <li>Not violate any applicable laws or university regulations.</li>
+                    <li>Not infringe upon the copyright, trademark, or other intellectual property rights of any third party.</li>
+                    <li>Not contain malicious code, viruses, or harmful software.</li>
+                </ul>
+
+                <h3>5. Intellectual Property</h3>
+                <p>Users retain ownership of the content they upload to CampNect. By uploading content, you grant CampNect a non-exclusive, royalty-free license to host, store, and display your content within the platform. You represent that you have all necessary rights to the content you share.</p>
+
+                <h3>6. Privacy</h3>
+                <p>Your use of CampNect is also governed by our Privacy Policy, which explains how we collect, use, and protect your personal information.</p>
+
+                <h3>7. Termination</h3>
+                <p>CampNect reserves the right to suspend or terminate accounts that violate these terms, including but not limited to:</p>
+                <ul>
+                    <li>Harassment or bullying of other users.</li>
+                    <li>Sharing inappropriate or prohibited content.</li>
+                    <li>Using the platform for unauthorized commercial purposes.</li>
+                    <li>Repeated violations of community guidelines.</li>
+                </ul>
+
+                <h3>8. Limitation of Liability</h3>
+                <p>CampNect is provided "as is" without warranties of any kind. CampNect shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the platform. We strive to maintain high availability but do not guarantee uninterrupted or error-free service.</p>
+
+                <h3>9. Changes to Terms</h3>
+                <p>We reserve the right to modify these terms at any time. Users will be notified of material changes via the platform. Continued use of CampNect after such modifications constitutes acceptance of the updated terms.</p>
+
+                <h3>10. Governing Law</h3>
+                <p>These terms shall be governed by and construed in accordance with the laws of the Islamic Republic of Pakistan. Any disputes shall be resolved through the appropriate legal channels in Sahiwal, Punjab.</p>
+
+                <h3>11. Contact</h3>
+                <p>For questions about these Terms of Service, please <a href="{% url 'contact' %}" style="color: #1C3353; font-weight: 600;">contact our support team</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <h3 class="footer-logo">CampNect</h3>
+                    <p class="footer-about">Empowering Riphah International University, Sahiwal Campus with a centralized academic collaboration platform.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'index' %}#home">Home</a></li>
+                        <li><a href="{% url 'index' %}#features">Features</a></li>
+                        <li><a href="{% url 'index' %}#why">Why CampNect</a></li>
+                        <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                        <li><a href="{% url 'index' %}#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-envelope"></i></span> support@campnect.com</a></li>
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-phone"></i></span> Contact via university directory</a></li>
+                    </ul>
+                    <div class="social-icons">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-camera"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-link"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CampNect. All Rights Reserved. | Designed for Riphah International University</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

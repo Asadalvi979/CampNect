@@ -1,0 +1,141 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Privacy Policy</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/pages.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">CampNect</h1>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}#home">Home</a></li>
+                <li><a href="{% url 'index' %}#features">Features</a></li>
+                <li><a href="{% url 'index' %}#why">Why us?</a></li>
+                <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                <li><a href="{% url 'index' %}#contact">Contact</a></li>
+            </ul>
+            <a href="{% url 'login' %}">Login</a>
+        </nav>
+    </header>
+
+    <div class="page-header">
+        <h1>Privacy Policy</h1>
+        <p>How CampNect protects and manages your personal information.</p>
+    </div>
+
+    <div class="page-content">
+        <div class="page-section">
+            <div class="legal-text">
+                <p><strong>Last Updated:</strong> June 2026</p>
+
+                <h3>1. Introduction</h3>
+                <p>CampNect ("we," "our," or "us") is committed to protecting the privacy of students, faculty, and alumni of Riphah International University, Sahiwal Campus. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
+
+                <h3>2. Information We Collect</h3>
+                <p>We collect the following types of information to provide and improve our services:</p>
+                <ul>
+                    <li><strong>Personal Information:</strong> Full name, CMS number, university email address, department, and semester/status.</li>
+                    <li><strong>Academic Information:</strong> Study materials uploaded, communities joined, projects participated in, and notes shared.</li>
+                    <li><strong>Usage Data:</strong> Login times, pages visited, features used, and interaction patterns within the platform.</li>
+                    <li><strong>Communication Data:</strong> Messages sent and received through the chat feature (stored securely).</li>
+                </ul>
+
+                <h3>3. How We Use Your Information</h3>
+                <p>Your information is used solely for the following purposes:</p>
+                <ul>
+                    <li>To create and maintain your account on CampNect.</li>
+                    <li>To facilitate communication between students, seniors, and alumni.</li>
+                    <li>To enable sharing and organization of academic resources.</li>
+                    <li>To improve platform features and user experience.</li>
+                    <li>To ensure compliance with university policies and community guidelines.</li>
+                </ul>
+
+                <h3>4. Data Sharing and Disclosure</h3>
+                <p>We do not sell, trade, or rent your personal information to third parties. Information may be shared only in the following circumstances:</p>
+                <ul>
+                    <li>With other CampNect users as part of normal platform functionality (e.g., profile information, messages).</li>
+                    <li>With Riphah International University administration for verification and academic purposes.</li>
+                    <li>When required by law or to protect the rights and safety of our community.</li>
+                </ul>
+
+                <h3>5. Data Security</h3>
+                <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. This includes encrypted data transmission, secure server infrastructure, and regular security audits.</p>
+
+                <h3>6. Data Retention</h3>
+                <p>We retain your personal information for as long as your account is active or as needed to provide you services. Upon account deletion, we will delete or anonymize your data within 30 days, except where retention is required by law or university policy.</p>
+
+                <h3>7. Your Rights</h3>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access the personal data we hold about you.</li>
+                    <li>Request correction of inaccurate or incomplete data.</li>
+                    <li>Request deletion of your account and associated data.</li>
+                    <li>Object to or restrict certain processing of your data.</li>
+                    <li>Export your data in a portable format.</li>
+                </ul>
+
+                <h3>8. Cookies</h3>
+                <p>CampNect uses essential cookies to maintain your session and authentication. We do not use tracking cookies for advertising purposes. You can control cookie settings through your browser preferences.</p>
+
+                <h3>9. Changes to This Policy</h3>
+                <p>We may update this Privacy Policy from time to time. We will notify users of any material changes through the platform or via email. Continued use of CampNect after changes constitutes acceptance of the updated policy.</p>
+
+                <h3>10. Contact Us</h3>
+                <p>If you have questions or concerns about this Privacy Policy or your data, please contact us at <a href="{% url 'contact' %}" style="color: #1C3353; font-weight: 600;">support@campnect.com</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <h3 class="footer-logo">CampNect</h3>
+                    <p class="footer-about">Empowering Riphah International University, Sahiwal Campus with a centralized academic collaboration platform.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'index' %}#home">Home</a></li>
+                        <li><a href="{% url 'index' %}#features">Features</a></li>
+                        <li><a href="{% url 'index' %}#why">Why CampNect</a></li>
+                        <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                        <li><a href="{% url 'index' %}#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-envelope"></i></span> support@campnect.com</a></li>
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-phone"></i></span> Contact via university directory</a></li>
+                    </ul>
+                    <div class="social-icons">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-camera"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-link"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CampNect. All Rights Reserved. | Designed for Riphah International University</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

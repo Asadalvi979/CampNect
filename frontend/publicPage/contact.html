@@ -1,0 +1,153 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampNect - Contact Us</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/pages.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">CampNect</h1>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}#home">Home</a></li>
+                <li><a href="{% url 'index' %}#features">Features</a></li>
+                <li><a href="{% url 'index' %}#why">Why us?</a></li>
+                <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                <li><a href="{% url 'index' %}#contact">Contact</a></li>
+            </ul>
+            <a href="{% url 'login' %}">Login</a>
+        </nav>
+    </header>
+
+    <div class="page-header">
+        <h1>Contact Us</h1>
+        <p>Have a question or concern? We'd love to hear from you.</p>
+    </div>
+
+    <div class="page-content">
+        <div class="page-section">
+            <div class="contact-grid">
+                <div class="contact-info-card">
+                    <h3>Get In Touch</h3>
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <h4>Address</h4>
+                            <p>Riphah International University, Sahiwal Campus, Main Raiwind Road, Sahiwal, Punjab, Pakistan</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <h4>Email</h4>
+                            <p>support@campnect.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon"><i class="fas fa-phone"></i></div>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>Contact via university directory</p>
+                        </div>
+                    </div>
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <h4>Working Hours</h4>
+                            <p>Monday - Friday: 9:00 AM - 5:00 PM<br>Saturday: 10:00 AM - 2:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-card">
+                    <h3>Send Us a Message</h3>
+                    <form class="contact-form" id="contactForm" method="POST" action="{% url 'contact' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" name="subject" placeholder="What is this regarding?" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea name="message" placeholder="Write your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="contact-submit-btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-section">
+            <h2>Frequently Asked</h2>
+            <p>Before reaching out, you might find your answer faster in our <a href="{% url 'index' %}" style="color: #1C3353; font-weight: 600;">Help Center</a>. We cover topics like account setup, notes sharing, messaging, and communities.</p>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <h3 class="footer-logo">CampNect</h3>
+                    <p class="footer-about">Empowering Riphah International University, Sahiwal Campus with a centralized academic collaboration platform.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'index' %}#home">Home</a></li>
+                        <li><a href="{% url 'index' %}#features">Features</a></li>
+                        <li><a href="{% url 'index' %}#why">Why CampNect</a></li>
+                        <li><a href="{% url 'index' %}#eligibility">Eligibility</a></li>
+                        <li><a href="{% url 'index' %}#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-envelope"></i></span> support@campnect.com</a></li>
+                        <li><a href="#"><span class="social-icon"><i class="fas fa-phone"></i></span> +92 123 4567890</a></li>
+                    </ul>
+                    <div class="social-icons">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-camera"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-link"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CampNect. All Rights Reserved. | Designed for Riphah International University</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        {% if messages %}
+        {% for message in messages %}
+        alert('{{ message }}');
+        {% endfor %}
+        {% endif %}
+    </script>
+</body>
+</html>

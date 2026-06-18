@@ -1,0 +1,510 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %} - Profile{% endblock %}
+{% block nav_profile %}active{% endblock %}
+{% block main_class %}main-feed profile-page{% endblock %}
+{% block nav_center %}<input type="text" placeholder="Search..." class="search-input">{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-banner">
+        <div class="banner-bg"></div>
+        <div class="banner-content">
+            <div class="banner-left">
+                <div class="banner-avatar">
+                    {% if user.profile_pic %}
+                        <img src="{{ user.profile_pic.url }}" alt="Profile">
+                    {% else %}
+                        <div class="initial-avatar" style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:2rem;border-radius:50%;width:80px;height:80px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                    {% endif %}
+                </div>
+                <div class="banner-info">
+                    <h1 class="banner-name">{{ user.first_name }} {{ user.last_name }}</h1>
+                    <div class="banner-badges">
+                        <span class="banner-role-badge role-{{ user.role }}">{{ user.get_role_display }}</span>
+                        <span class="banner-dept-badge">{{ user.department }}</span>
+                    </div>
+                    <div class="banner-meta">
+                        <span><i class="fas fa-hashtag"></i> {{ user.cms }}</span>
+                        {% if user.semester %}
+                        <span><i class="fas fa-layer-group"></i> Semester {{ user.semester }}</span>
+                        {% endif %}
+                        <span><i class="fas fa-university"></i> Riphah Sahiwal</span>
+                    </div>
+                    {% if user.bio %}
+                    <p class="banner-bio">{{ user.bio|truncatechars:160 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="banner-actions">
+                <button class="pe-btn pe-btn-primary" id="editProfileBtn"><i class="fas fa-pencil-alt"></i> Edit Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-highlights">
+        <div class="highlight-item">
+            <span class="highlight-value">{{ connections_count }}</span>
+            <span class="highlight-label">Connections</span>
+        </div>
+        <div class="highlight-item">
+            <span class="highlight-value">{{ communities_count }}</span>
+            <span class="highlight-label">Communities</span>
+        </div>
+        <div class="highlight-item">
+            <span class="highlight-value">{{ notes_count }}</span>
+            <span class="highlight-label">Notes Shared</span>
+        </div>
+        <div class="highlight-item">
+            <span class="highlight-value">{{ projects_count }}</span>
+            <span class="highlight-label">Projects</span>
+        </div>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-main-content">
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>About</h3>
+                </div>
+                <div class="ps-card-body">
+                    <p class="about-text" id="aboutText">{{ user.bio|default:'No bio yet.' }}</p>
+                    <button class="pe-btn pe-btn-ghost" id="editAboutBtn"><i class="fas fa-pen"></i> Edit Bio</button>
+                </div>
+            </section>
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Academic Information</h3>
+                </div>
+                <div class="ps-card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Department</span>
+                            <span class="info-value">{{ user.department }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Semester</span>
+                            <span class="info-value">{{ user.semester|default:'N/A' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Registration No.</span>
+                            <span class="info-value">{{ user.cms }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">University</span>
+                            <span class="info-value">Riphah Sahiwal</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role</span>
+                            <span class="info-value">{{ user.get_role_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {% if user.role == 'alumni' %}
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-briefcase"></i>
+                    <h3>Professional Information</h3>
+                    <button class="pe-btn pe-btn-ghost" id="editProfessionalInfoBtn" style="margin-left:auto;"><i class="fas fa-pen"></i> Edit</button>
+                </div>
+                <div class="ps-card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Graduation Year</span>
+                            <span class="info-value" id="profGradYearDisplay">{{ user.graduation_year|default:'Not set' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Current Company</span>
+                            <span class="info-value" id="profCompanyDisplay">{{ user.current_company|default:'Not set' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Position</span>
+                            <span class="info-value" id="profPositionDisplay">{{ user.current_position|default:'Not set' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Industry</span>
+                            <span class="info-value" id="profIndustryDisplay">{{ user.industry|default:'Not set' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Skills</h3>
+                </div>
+                <div class="ps-card-body">
+                    <div class="skills-wrapper" id="skillsWrapper">
+                        {% if user.skills %}
+                            {% for skill in user.skills|split:"," %}
+                                <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No skills listed</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>Projects</h3>
+                    <span class="ps-card-badge">{{ projects_count }} total</span>
+                </div>
+                <div class="ps-card-body">
+                    {% if projects_count > 0 %}
+                        <p class="text-muted" style="margin-bottom:0.75rem;">{{ projects_count }} collaboration project{% if projects_count != 1 %}s{% endif %} posted.</p>
+                        <a href="{% url 'collaboration' %}" class="pe-link">View all projects <i class="fas fa-arrow-right"></i></a>
+                    {% else %}
+                        <p class="text-muted">No projects yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-book"></i>
+                    <h3>Notes Contributions</h3>
+                    <span class="ps-card-badge">{{ notes_count }} notes</span>
+                </div>
+                <div class="ps-card-body">
+                    {% if user_notes %}
+                        <div class="notes-list">
+                            {% for note in user_notes %}
+                            <div class="note-item">
+                                <div class="note-item-icon"><i class="fas fa-file-alt"></i></div>
+                                <div class="note-item-info">
+                                    <h4>{{ note.title }}</h4>
+                                    <span class="note-item-meta">{{ note.subject|default:'General' }} &middot; {{ note.upload_date|date:"M d, Y" }}</span>
+                                </div>
+                                <a href="{% url 'notes' %}" class="pe-btn-sm">View</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No notes shared yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Communities</h3>
+                    <span class="ps-card-badge">{{ communities_count }} joined</span>
+                </div>
+                <div class="ps-card-body">
+                    {% if user_memberships %}
+                        <div class="communities-row">
+                            {% for m in user_memberships %}
+                            <div class="comm-chip">
+                                <i class="fas fa-users"></i>
+                                <span>{{ m.community.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No communities joined yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="ps-card">
+                <div class="ps-card-header">
+                    <i class="fas fa-clock"></i>
+                    <h3>Activity Timeline</h3>
+                </div>
+                <div class="ps-card-body">
+                    <div class="timeline" id="activityList">
+                        {% if user_notes or user_memberships %}
+                            {% for note in user_notes %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="background:#10B981;"></div>
+                                <div class="timeline-content">
+                                    <p>Uploaded <strong>{{ note.title }}</strong></p>
+                                    <span class="timeline-time"><i class="far fa-calendar-alt"></i> {{ note.upload_date|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% for m in user_memberships %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="background:#3B82F6;"></div>
+                                <div class="timeline-content">
+                                    <p>Joined <strong>{{ m.community.name }}</strong></p>
+                                    <span class="timeline-time"><i class="far fa-calendar-alt"></i> {{ m.joined_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="background:#d0d8d4;"></div>
+                                <div class="timeline-content">
+                                    <p>No recent activity</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="profile-sidebar">
+            <div class="ps-widget">
+                <div class="ps-widget-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Profile Completion</h4>
+                </div>
+                <div class="ps-widget-body">
+                    <p style="font-size:0.75rem;color:#8aa99b;margin:0 0 0.6rem;">Fill in your details to complete your profile</p>
+                    <ul class="completion-list">
+                        <li class="{% if user.profile_pic %}done{% endif %}"><i class="fas fa-check-circle"></i> Profile Photo</li>
+                        <li class="{% if user.first_name and user.last_name %}done{% endif %}"><i class="fas fa-check-circle"></i> Full Name</li>
+                        <li class="{% if user.bio %}done{% endif %}"><i class="fas fa-check-circle"></i> Bio</li>
+                        <li class="{% if user.skills %}done{% endif %}"><i class="fas fa-check-circle"></i> Skills</li>
+                        <li class="{% if user.semester %}done{% endif %}"><i class="fas fa-check-circle"></i> Semester</li>
+                        <li class="{% if connections_count > 0 %}done{% endif %}"><i class="fas fa-check-circle"></i> First Connection</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ps-widget">
+                <div class="ps-widget-header">
+                    <i class="fas fa-user-friends"></i>
+                    <h4>Suggested Connections</h4>
+                </div>
+                <div class="ps-widget-body">
+                    <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;">Connect with peers from your department</p>
+                    <a href="{% url 'dashboard' %}" class="pe-link">Discover people <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            {% if user.role != 'student' or user.semester and user.semester >= 5 %}
+            <div class="ps-widget">
+                <div class="ps-widget-header">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h4>Recommended Alumni</h4>
+                </div>
+                <div class="ps-widget-body">
+                    <p class="text-muted" style="font-size:0.8rem;padding:0.5rem 0;">Alumni from your department</p>
+                    <a href="{% url 'dashboard' %}" class="pe-link">Browse alumni <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="ps-widget">
+                <div class="ps-widget-header">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h4>Upcoming Events</h4>
+                </div>
+                <div class="ps-widget-body">
+                    {% if upcoming_events %}
+                        {% for event in upcoming_events %}
+                        <div class="mini-event-item">
+                            <div class="mini-event-date">
+                                <span class="mini-event-month">{{ event.date|date:"M" }}</span>
+                                <span class="mini-event-day">{{ event.date|date:"d" }}</span>
+                            </div>
+                            <div class="mini-event-info">
+                                <h5>{{ event.title }}</h5>
+                                {% if event.time %}
+                                <span>{{ event.time|time:"g:i A" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="events-empty-mini">
+                        <i class="fas fa-calendar-plus"></i>
+                        <p>No upcoming events</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<div class="modal-overlay" id="aboutModal">
+    <div class="modal-card">
+        <h3>Edit Bio</h3>
+        <form method="POST" action="{% url 'profile' %}">
+            {% csrf_token %}
+            <textarea name="bio" id="aboutInput" rows="4" placeholder="Write something about yourself...">{{ user.bio }}</textarea>
+            <div class="modal-actions">
+                <button type="button" class="modal-cancel" id="aboutCancel">Cancel</button>
+                <button type="submit" class="modal-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="professionalInfoModal">
+    <div class="modal-card edit-modal-card" style="max-width:500px;">
+        <div class="edit-modal-header">
+            <h3>Update Professional Info</h3>
+            <button type="button" class="edit-modal-close" id="professionalInfoClose">&times;</button>
+        </div>
+        <form id="professionalInfoForm">
+            <div class="edit-modal-body">
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Graduation Year</label>
+                        <input type="number" name="graduation_year" id="profGradYear" placeholder="e.g. 2024" min="1900" max="2100" value="{{ user.graduation_year|default:'' }}">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Current Company</label>
+                        <input type="text" name="current_company" id="profCompany" placeholder="e.g. Google" value="{{ user.current_company }}">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Current Position</label>
+                        <input type="text" name="current_position" id="profPosition" placeholder="e.g. Software Engineer" value="{{ user.current_position }}">
+                    </div>
+                </div>
+                <div class="edit-field-block" style="width:100%;">
+                    <div class="edit-form-group">
+                        <label>Industry</label>
+                        <input type="text" name="industry" id="profIndustry" placeholder="e.g. Technology" value="{{ user.industry }}">
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="professionalInfoCancel">Cancel</button>
+                <button type="submit" class="modal-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="editProfileModal">
+    <div class="modal-card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>Edit Profile</h3>
+            <button type="button" class="edit-modal-close" id="editProfileClose">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="edit-modal-body">
+                <div class="edit-avatar-section">
+                    {% if user.profile_pic %}
+                        <img src="{{ user.profile_pic.url }}" alt="Profile" id="editProfilePreview">
+                    {% else %}
+                        <div class="initial-avatar" id="editProfilePreview" style="display:flex;align-items:center;justify-content:center;background:#1C3353;color:#F6F0D6;font-weight:700;font-size:2rem;border-radius:50%;width:80px;height:80px;text-transform:uppercase;">{{ user.first_name|first|default:'U' }}</div>
+                    {% endif %}
+                    <label class="edit-upload-btn">
+                        Change Photo
+                        <input type="file" name="profile_pic" accept="image/*" id="editProfilePicInput" hidden>
+                    </label>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label>First Name</label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" required>
+                        </div>
+                        <div class="edit-form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Email</label>
+                        <input type="email" value="{{ user.email }}" class="edit-input-readonly" readonly>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Semester</label>
+                        <input type="number" value="{{ user.semester }}" class="edit-input-readonly" readonly>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Skills</label>
+                        <input type="text" name="skills" value="{{ user.skills }}" placeholder="e.g. Python, JavaScript, Django">
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="editProfileCancel">Cancel</button>
+                <button type="submit" class="modal-save">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var editBtn = document.getElementById('editProfessionalInfoBtn');
+    var modal = document.getElementById('professionalInfoModal');
+    var closeBtn = document.getElementById('professionalInfoClose');
+    var cancelBtn = document.getElementById('professionalInfoCancel');
+    var form = document.getElementById('professionalInfoForm');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', function() {
+            if (modal) modal.classList.add('show');
+        });
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() { modal.classList.remove('show'); });
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() { modal.classList.remove('show'); });
+    }
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.classList.remove('show');
+        });
+    }
+    if (form && typeof getCSRFToken === 'function') {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var params = 'graduation_year=' + encodeURIComponent(document.getElementById('profGradYear').value) +
+                '&current_company=' + encodeURIComponent(document.getElementById('profCompany').value.trim()) +
+                '&current_position=' + encodeURIComponent(document.getElementById('profPosition').value.trim()) +
+                '&industry=' + encodeURIComponent(document.getElementById('profIndustry').value.trim()) +
+                '&csrfmiddlewaretoken=' + encodeURIComponent(getCSRFToken());
+
+            fetch('/api/update-alumni-profile/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: params
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) { alert(data.error); return; }
+                document.getElementById('profGradYearDisplay').textContent = document.getElementById('profGradYear').value || 'Not set';
+                document.getElementById('profCompanyDisplay').textContent = document.getElementById('profCompany').value.trim() || 'Not set';
+                document.getElementById('profPositionDisplay').textContent = document.getElementById('profPosition').value.trim() || 'Not set';
+                document.getElementById('profIndustryDisplay').textContent = document.getElementById('profIndustry').value.trim() || 'Not set';
+                modal.classList.remove('show');
+            })
+            .catch(function() { alert('Failed to update. Try again.'); });
+        });
+    }
+})();
+</script>
+<script src="{% static 'assets/js/profile.js' %}?v=2"></script>
+{% endblock %}

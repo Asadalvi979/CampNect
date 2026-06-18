@@ -1,0 +1,154 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} - Notes{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'assets/css/notes.css' %}">{% endblock %}
+{% block nav_center %}<input type="text" placeholder="Search notes..." class="search-input" id="notesSearch">{% endblock %}
+{% block nav_notes %}active{% endblock %}
+
+{% block content %}
+<div class="notes-header">
+    <div>
+        <h2>Notes Repository</h2>
+        <p>Browse and share academic notes</p>
+    </div>
+    <button class="upload-notes-btn" id="uploadNotesBtn">+ Upload Notes</button>
+</div>
+
+<div class="semester-filter">
+    <button class="sem-tab active" data-sem="all">All</button>
+    <button class="sem-tab" data-sem="1">Sem 1</button>
+    <button class="sem-tab" data-sem="2">Sem 2</button>
+    <button class="sem-tab" data-sem="3">Sem 3</button>
+    <button class="sem-tab" data-sem="4">Sem 4</button>
+    <button class="sem-tab" data-sem="5">Sem 5</button>
+    <button class="sem-tab" data-sem="6">Sem 6</button>
+    <button class="sem-tab" data-sem="7">Sem 7</button>
+    <button class="sem-tab" data-sem="8">Sem 8</button>
+</div>
+
+<div class="notes-grid" id="notesGrid"></div>
+
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal-card edit-modal-card">
+        <div class="edit-modal-header">
+            <h3>Upload Notes</h3>
+            <button type="button" class="edit-modal-close" id="uploadClose">&times;</button>
+        </div>
+        <form id="uploadNotesForm" method="POST" action="{% url 'notes' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="edit-modal-body">
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Subject</label>
+                        <input type="text" name="subject" placeholder="e.g. Data Structures" required>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Title</label>
+                        <input type="text" name="title" placeholder="e.g. Complete Notes - Mid Term" required>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="3" placeholder="Brief description of the notes" required></textarea>
+                    </div>
+                </div>
+                <div class="edit-field-block">
+                    <div class="edit-form-group">
+                        <label>File (PDF)</label>
+                        <input type="file" name="file" accept=".pdf" required>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="modal-cancel" id="uploadCancel">Cancel</button>
+                <button type="submit" class="modal-save">Upload</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="ctx-menu" id="ctxMenu">
+    <div class="ctx-menu-item" data-action="copy-title"><i class="fas fa-clipboard"></i> Copy Title</div>
+    <div class="ctx-menu-item" data-action="copy-desc"><i class="fas fa-clipboard"></i> Copy Description</div>
+    <div class="ctx-menu-sep"></div>
+    <div class="ctx-menu-item" data-action="open"><i class="fas fa-link"></i> Open in New Tab</div>
+    <div class="ctx-menu-item" data-action="download"><i class="fas fa-download"></i> Download</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.notesData = [
+        {% for note in all_notes %}
+        {
+            id: {{ note.id }},
+            subject: '{{ note.subject|escapejs }}',
+            title: '{{ note.title|escapejs }}',
+            semester: '{{ note.uploaded_by.semester|default:"" }}',
+            icon: 'PDF',
+            uploader: '{{ note.uploaded_by.get_full_name|default:note.uploaded_by.cms|escapejs }}',
+            uploaderId: {{ note.uploaded_by.id }},
+            downloads: 0,
+            desc: '{{ note.description|default:"No description provided."|escapejs }}',
+            url: '{% if note.file %}{{ note.file.url }}{% endif %}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    var ctxMenu = document.getElementById('ctxMenu');
+    var ctxTarget = null;
+
+    document.addEventListener('contextmenu', function(e) {
+        var card = e.target.closest('.note-card');
+        if (!card) { ctxMenu.classList.remove('show'); return; }
+        e.preventDefault();
+
+        var fileUrl = card.dataset.url || '';
+        var title = card.dataset.title || '';
+        var desc = card.dataset.desc || '';
+
+        ctxTarget = { fileUrl: fileUrl, title: title, desc: desc };
+
+        document.querySelectorAll('#ctxMenu .ctx-menu-item[data-action]').forEach(function(el) {
+            var act = el.dataset.action;
+            if (act === 'copy-title') el.style.display = title ? 'flex' : 'none';
+            else if (act === 'copy-desc') el.style.display = desc ? 'flex' : 'none';
+            else el.style.display = fileUrl ? 'flex' : 'none';
+        });
+
+        var x = e.clientX, y = e.clientY;
+        var mw = window.innerWidth, mh = window.innerHeight;
+        var cw = 180, ch = 200;
+        if (x + cw > mw) x = mw - cw - 8;
+        if (y + ch > mh) y = mh - ch - 8;
+        ctxMenu.style.left = x + 'px'; ctxMenu.style.top = y + 'px';
+        ctxMenu.classList.add('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!ctxMenu.contains(e.target)) ctxMenu.classList.remove('show');
+    });
+
+    document.querySelectorAll('#ctxMenu .ctx-menu-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            var action = item.dataset.action;
+            if (action === 'copy-title' && ctxTarget && ctxTarget.title) {
+                navigator.clipboard.writeText(ctxTarget.title);
+            } else if (action === 'copy-desc' && ctxTarget && ctxTarget.desc) {
+                navigator.clipboard.writeText(ctxTarget.desc);
+            } else if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
+                var a = document.createElement('a');
+                a.href = ctxTarget.fileUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
+            } else if (action === 'open' && ctxTarget && ctxTarget.fileUrl) {
+                window.open(ctxTarget.fileUrl, '_blank');
+            }
+            ctxMenu.classList.remove('show');
+        });
+    });
+</script>
+<script src="{% static 'assets/js/notes.js' %}"></script>
+{% endblock %}
