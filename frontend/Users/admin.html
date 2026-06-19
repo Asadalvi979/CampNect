@@ -257,7 +257,7 @@
                                 <tr class="user-row" data-user-id="{{ u.id }}" onclick="openUserDrawer({{ u.id }})">
                                     <td>
                                         <div class="user-cell">
-                                            <div class="user-avatar" style="background:{% cycle '#2563EB' '#10B981' '#B8860B' '#8B5CF6' '#EF4444' '#06B6D4' '#1C3353' '#F59E0B' %};">{{ u.first_name|first|upper }}{{ u.last_name|first|upper }}</div>
+                                             {% if u.profile_pic %}<img class="user-avatar" src="{{ u.profile_pic.url }}" alt="">{% else %}<div class="user-avatar" style="background:{% cycle '#2563EB' '#10B981' '#B8860B' '#8B5CF6' '#EF4444' '#06B6D4' '#1C3353' '#F59E0B' %};">{{ u.first_name|first|upper }}{{ u.last_name|first|upper }}</div>{% endif %}
                                             <div>
                                                 <div class="user-name">{{ u.first_name }} {{ u.last_name }}</div>
                                                 <div class="user-sub">{{ u.get_role_display }}</div>

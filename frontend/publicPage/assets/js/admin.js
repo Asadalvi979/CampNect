@@ -317,7 +317,7 @@ function openUserDrawer(id) {
   var nameSafe = data.name.replace(/'/g, "\\'");
   body.innerHTML =
     '<div class="drawer-profile">' +
-      '<div class="drawer-avatar" style="background:#2563EB;">' + data.initials + '</div>' +
+      (data.avatar ? '<img class="drawer-avatar" src="' + data.avatar + '" alt="">' : '<div class="drawer-avatar" style="background:#2563EB;">' + data.initials + '</div>') +
       '<h2>' + data.name + '</h2>' +
       '<span class="role-pill ' + data.role + '">' + data.roleLabel + '</span>' +
     '</div>' +

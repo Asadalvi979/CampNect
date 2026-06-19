@@ -1163,6 +1163,7 @@ body {
   font-weight: 700;
   font-size: 0.75rem;
   flex-shrink: 0;
+  object-fit: cover;
 }
 .user-name {
   font-weight: 600;
@@ -1313,6 +1314,7 @@ body {
   font-weight: 700;
   font-size: 1.25rem;
   margin: 0 auto 0.75rem;
+  object-fit: cover;
 }
 .drawer-profile h2 {
   font-size: 1.15rem;
