@@ -2028,8 +2028,9 @@ def community_chat_view(request, community_id):
         return redirect('community_chat', community_id=community.id)
 
     messages_list = CommunityMessage.objects.filter(community=community).order_by('timestamp')
-    members = CommunityMember.objects.filter(community=community).select_related('user')
-    admin_ids = set(m.user_id for m in members if m.is_admin)
+    all_members = CommunityMember.objects.filter(community=community).select_related('user')
+    admin_ids = set(m.user_id for m in all_members if m.is_admin)
+    members = all_members.exclude(is_admin=True)
     connections_count = Connection.objects.filter(
         Q(follower=request.user) | Q(following=request.user)
     ).count()
@@ -2045,7 +2046,7 @@ def community_chat_view(request, community_id):
 
     
     can_send = is_member and (community.message_permission == 'all_members' or is_admin)
-    all_users_for_add = User.objects.exclude(id__in=[m.user_id for m in members]).exclude(id=request.user.id)
+    all_users_for_add = User.objects.exclude(id__in=[m.user_id for m in all_members]).exclude(id=request.user.id)
 
     context = {
         'community': community,
