@@ -537,3 +537,37 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('zoomed');
     });
 });
+
+if (window.currentUser) {
+    setInterval(function() {
+        if (!activeUserId) return;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/chat/?ajax=1&user_id=' + activeUserId, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.ok) {
+                        var conv = null;
+                        for (var i = 0; i < conversationsData.length; i++) {
+                            if (conversationsData[i].id === activeUserId) {
+                                conv = conversationsData[i];
+                                break;
+                            }
+                        }
+                        if (conv) {
+                            var oldLen = conv.messages ? conv.messages.length : 0;
+                            conv.messages = data.messages;
+                            if (data.messages.length !== oldLen) {
+                                openConversation(activeUserId);
+                                scrollToBottom();
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
+        };
+        xhr.send();
+    }, 3000);
+}

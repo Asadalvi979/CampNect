@@ -1367,6 +1367,23 @@ def collaboration_view(request):
 
 @login_required
 def chat_view(request):
+    if request.method == 'GET' and request.GET.get('ajax') == '1':
+        user_id = request.GET.get('user_id')
+        if user_id:
+            partner = get_object_or_404(User, id=user_id)
+            msgs = Message.objects.filter(
+                Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user)
+            ).order_by('timestamp')
+            msgs_data = [{
+                'id': m.id,
+                'sender_id': m.sender.id,
+                'text': m.text,
+                'file': m.file.url if m.file else None,
+                'timestamp': m.timestamp.isoformat(),
+            } for m in msgs]
+            return JsonResponse({'ok': True, 'messages': msgs_data})
+        return JsonResponse({'ok': False, 'error': 'No user_id provided'})
+
     if request.method == 'POST':
         _is_ajax = request.POST.get('_ajax') == '1'
 
