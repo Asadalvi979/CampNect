@@ -1,6 +1,13 @@
 var chatMessages = document.getElementById('chatMessages');
 var msgInput = document.getElementById('msgInput');
 var fileInput = document.getElementById('fileInput');
+var plusBtn = document.getElementById('plusBtn');
+
+if (plusBtn && fileInput) {
+    plusBtn.addEventListener('click', function () {
+        fileInput.click();
+    });
+}
 
 if (fileInput && msgInput) {
     fileInput.addEventListener('change', function () {

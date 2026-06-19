@@ -524,10 +524,10 @@
                         {% csrf_token %}
                         <div class="input-wrapper">
                             <textarea name="text" placeholder="Type a message..." id="msgInput" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.closest('form').querySelector('.send-btn').click()}"></textarea>
-                            <label class="plus-btn" id="plusBtn">
+                            <span class="plus-btn" id="plusBtn">
                                 +
                                 <input type="file" name="file" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" hidden id="fileInput">
-                            </label>
+                            </span>
                         </div>
                         <button type="submit" class="send-btn">Send</button>
                     </form>

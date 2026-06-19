@@ -188,7 +188,10 @@ function sendMessage() {
     });
 }
 
-if (chatFileInput) {
+if (chatFileInput && chatPlusBtn) {
+    chatPlusBtn.addEventListener('click', function () {
+        chatFileInput.click();
+    });
     chatFileInput.addEventListener('change', function () {
         if (chatFileInput.files.length > 0) {
             selectedFile = chatFileInput.files[0];
