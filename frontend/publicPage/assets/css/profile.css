@@ -907,6 +907,11 @@
     overflow-y: auto;
     border-radius: 16px;
     max-height: calc(100vh - 4rem);
+    scrollbar-width: none;
+}
+
+.edit-modal-card::-webkit-scrollbar {
+    display: none;
 }
 
 .edit-modal-header {
