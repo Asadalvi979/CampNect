@@ -811,9 +811,11 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 2000;
     display: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     backdrop-filter: blur(4px);
+    overflow-y: auto;
+    padding: 2rem 0;
 }
 
 .modal-overlay.show {
@@ -902,8 +904,9 @@
 .edit-modal-card {
     max-width: 480px;
     padding: 0;
-    overflow: hidden;
+    overflow-y: auto;
     border-radius: 16px;
+    max-height: calc(100vh - 4rem);
 }
 
 .edit-modal-header {
