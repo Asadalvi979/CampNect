@@ -1,5 +1,7 @@
 import json
+import os
 import secrets
+import requests
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -39,6 +41,34 @@ def validate_uploaded_file(uploaded_file, allowed_extensions=None, max_size_mb=1
     return None
 
 
+def send_email_brevo(html, text, subject, recipient_email):
+    api_key = os.getenv('BREVO_API_KEY', '')
+    if not api_key:
+        return False
+    try:
+        resp = requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={
+                'api-key': api_key,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            json={
+                'sender': {'name': 'CampNect', 'email': settings.DEFAULT_FROM_EMAIL.split('<')[-1].rstrip('>') if '<' in settings.DEFAULT_FROM_EMAIL else settings.DEFAULT_FROM_EMAIL},
+                'to': [{'email': recipient_email}],
+                'subject': subject,
+                'htmlContent': html,
+                'textContent': text,
+            },
+            timeout=15,
+        )
+        return resp.ok
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception(f'Brevo API error for {recipient_email}')
+        return False
+
+
 def send_otp_email(subject, recipient_email, otp_code, resend=False):
     html = f"""\
 <!DOCTYPE html>
@@ -73,6 +103,10 @@ def send_otp_email(subject, recipient_email, otp_code, resend=False):
 </body>
 </html>"""
     text = f'Your OTP code is: {otp_code}\n\nThis code expires in 5 minutes.'
+
+    if send_email_brevo(html, text, subject, recipient_email):
+        return True
+
     msg = EmailMultiAlternatives(subject, text, settings.DEFAULT_FROM_EMAIL, [recipient_email])
     msg.attach_alternative(html, 'text/html')
     try:
@@ -156,7 +190,11 @@ def register_view(request):
         print(f'Code: {code}')
         print(f'Expires in: 5 minutes')
         print(f'=====================================\n')
-        send_otp_email('Your CampNect OTP Code', email, code)
+        try:
+            send_otp_email('Your CampNect OTP Code', email, code)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(f'Failed to send OTP email to {email}')
 
         request.session.flush()
         request.session['otp_email'] = email
@@ -194,7 +232,11 @@ def verify_otp_view(request):
             print(f'Code: {code} (RESEND)')
             print(f'Expires in: 5 minutes')
             print(f'=========================================\n')
-            send_otp_email('Your CampNect OTP Code (Resend)', email, code, resend=True)
+            try:
+                send_otp_email('Your CampNect OTP Code (Resend)', email, code, resend=True)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception(f'Failed to resend OTP email to {email}')
             return redirect('verify_otp')
 
         code = request.POST.get('code', '').strip()
@@ -1042,6 +1084,7 @@ def dashboard(request):
 
 
 @login_required
+@login_required
 def profile_view(request):
     user = request.user
     if request.method == 'POST':
@@ -1153,6 +1196,7 @@ def notes_view(request):
         title = request.POST.get('title', '').strip()
         subject = request.POST.get('subject', '').strip()
         description = request.POST.get('description', '').strip()
+        semester = request.POST.get('semester', '').strip()
 
         if not title or not subject:
             messages.error(request, 'Title and subject are required.')
@@ -1173,6 +1217,7 @@ def notes_view(request):
             description=description,
             file=uploaded_file,
             uploaded_by=request.user,
+            semester=int(semester) if semester and semester.isdigit() else None,
         )
         messages.success(request, 'Notes uploaded successfully.')
         return redirect('notes')
