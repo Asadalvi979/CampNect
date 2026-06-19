@@ -2030,7 +2030,7 @@ def community_chat_view(request, community_id):
     messages_list = CommunityMessage.objects.filter(community=community).order_by('timestamp')
     all_members = CommunityMember.objects.filter(community=community).select_related('user')
     admin_ids = set(m.user_id for m in all_members if m.is_admin)
-    members = all_members.exclude(is_admin=True)
+    members = all_members.exclude(user__is_superuser=True)
     connections_count = Connection.objects.filter(
         Q(follower=request.user) | Q(following=request.user)
     ).count()
