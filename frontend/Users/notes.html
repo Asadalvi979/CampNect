@@ -88,11 +88,10 @@
 </div>
 
 <div class="ctx-menu" id="ctxMenu">
-    <div class="ctx-menu-item" data-action="copy-title"><i class="fas fa-clipboard"></i> Copy Title</div>
-    <div class="ctx-menu-item" data-action="copy-desc"><i class="fas fa-clipboard"></i> Copy Description</div>
-    <div class="ctx-menu-sep"></div>
     <div class="ctx-menu-item" data-action="open"><i class="fas fa-link"></i> Open in New Tab</div>
     <div class="ctx-menu-item" data-action="download"><i class="fas fa-download"></i> Download</div>
+    <div class="ctx-menu-sep" id="ctxDelSep" style="display:none;"></div>
+    <div class="ctx-menu-item danger" id="ctxDel" data-action="delete" style="display:none;"><i class="fas fa-trash"></i> Delete</div>
 </div>
 {% endblock %}
 
@@ -115,6 +114,7 @@
         {% endfor %}
     ];
 
+    var currentUserId = {{ request.user.id }};
     var ctxMenu = document.getElementById('ctxMenu');
     var ctxTarget = null;
 
@@ -126,14 +126,18 @@
         var fileUrl = card.dataset.url || '';
         var title = card.dataset.title || '';
         var desc = card.dataset.desc || '';
+        var noteId = card.dataset.id || '';
+        var uploaderId = parseInt(card.dataset.uploader || '0');
 
-        ctxTarget = { fileUrl: fileUrl, title: title, desc: desc };
+        ctxTarget = { fileUrl: fileUrl, title: title, desc: desc, noteId: noteId, uploaderId: uploaderId };
 
+        var hasFile = !!fileUrl;
+        document.getElementById('ctxDel').style.display = uploaderId === currentUserId ? 'flex' : 'none';
+        document.getElementById('ctxDelSep').style.display = uploaderId === currentUserId ? 'block' : 'none';
         document.querySelectorAll('#ctxMenu .ctx-menu-item[data-action]').forEach(function(el) {
             var act = el.dataset.action;
-            if (act === 'copy-title') el.style.display = title ? 'flex' : 'none';
-            else if (act === 'copy-desc') el.style.display = desc ? 'flex' : 'none';
-            else el.style.display = fileUrl ? 'flex' : 'none';
+            if (act === 'open' || act === 'download') el.style.display = hasFile ? 'flex' : 'none';
+            else if (act !== 'delete') el.style.display = 'flex';
         });
 
         var x = e.clientX, y = e.clientY;
@@ -152,15 +156,24 @@
     document.querySelectorAll('#ctxMenu .ctx-menu-item').forEach(function(item) {
         item.addEventListener('click', function() {
             var action = item.dataset.action;
-            if (action === 'copy-title' && ctxTarget && ctxTarget.title) {
-                navigator.clipboard.writeText(ctxTarget.title);
-            } else if (action === 'copy-desc' && ctxTarget && ctxTarget.desc) {
-                navigator.clipboard.writeText(ctxTarget.desc);
-            } else if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
+            if (action === 'download' && ctxTarget && ctxTarget.fileUrl) {
                 var a = document.createElement('a');
                 a.href = ctxTarget.fileUrl; a.download = ''; document.body.appendChild(a); a.click(); a.remove();
             } else if (action === 'open' && ctxTarget && ctxTarget.fileUrl) {
                 window.open(ctxTarget.fileUrl, '_blank');
+            } else if (action === 'delete' && ctxTarget && ctxTarget.noteId) {
+                if (confirm('Delete this note? This action cannot be undone.')) {
+                    var f = document.createElement('form');
+                    f.method = 'POST'; f.action = '{% url "notes" %}';
+                    var csrf = document.createElement('input');
+                    csrf.type = 'hidden'; csrf.name = 'csrfmiddlewaretoken'; csrf.value = '{{ csrf_token }}';
+                    var a = document.createElement('input');
+                    a.type = 'hidden'; a.name = 'action'; a.value = 'delete_note';
+                    var ni = document.createElement('input');
+                    ni.type = 'hidden'; ni.name = 'note_id'; ni.value = ctxTarget.noteId;
+                    f.appendChild(csrf); f.appendChild(a); f.appendChild(ni);
+                    document.body.appendChild(f); f.submit();
+                }
             }
             ctxMenu.classList.remove('show');
         });

@@ -33,7 +33,7 @@ function renderNotes() {
     }
 
     notesGrid.innerHTML = filtered.map(n => `
-        <div class="note-card" data-id="${n.id}" data-url="${n.url || ''}" data-title="${n.title.replace(/"/g, '&quot;')}" data-desc="${(n.desc || '').replace(/"/g, '&quot;')}">
+        <div class="note-card" data-id="${n.id}" data-url="${n.url || ''}" data-uploader="${n.uploaderId}" data-title="${n.title.replace(/"/g, '&quot;')}" data-desc="${(n.desc || '').replace(/"/g, '&quot;')}">
             <div class="note-card-icon"><i class="fas fa-file"></i></div>
             <h3>${n.title}</h3>
             <p class="note-subject">${n.subject} ${n.semester ? '• Semester ' + n.semester : ''}</p>

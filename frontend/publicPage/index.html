@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
     <link rel="stylesheet" href="{% static 'style.css' %}">
-    <title>CampNect - Riphah Academic Collaboration Platform</title>
+    <title>CampNect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -23,7 +26,6 @@
             </ul>
 
             <a href="{% url 'login' %}">Login</a>
-            <!-- <a href="{% url 'register' %}">Register</a> -->
         </nav>
     </header>
 
@@ -249,6 +251,104 @@
 
                 <div class="eligibility-right">
                     <img src="{% static 'images/right image.png' %}" alt="CampNect Access & Eligibility">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" id="join">
+        <div class="cta-container">
+            <div class="cta-decor cta-decor-1"></div>
+            <div class="cta-decor cta-decor-2"></div>
+            <div class="cta-inner">
+                <div class="cta-content">
+                    <h2 class="cta-heading">Ready to Become Part of the CampNect Community?</h2>
+                    <p class="cta-text">
+                        Connect with fellow students, experienced alumni, mentors, and university communities. Share knowledge, collaborate on projects, participate in discussions, and build meaningful professional connections—all in one secure platform.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="{% url 'login' %}" class="cta-btn cta-btn-primary">
+                            <i class="fas fa-arrow-right-to-bracket"></i> Login
+                        </a>
+                        <a href="{% url 'register' %}" class="cta-btn cta-btn-secondary">
+                            <i class="fas fa-user-plus"></i> Create an Account
+                        </a>
+                    </div>
+                    <div class="cta-trust">
+                        <span><i class="fas fa-check-circle"></i> Secure Registration</span>
+                        <span><i class="fas fa-check-circle"></i> Email OTP Verification</span>
+                        <span><i class="fas fa-check-circle"></i> Exclusive for Riphah International University Members</span>
+                    </div>
+                </div>
+                <div class="cta-illustration">
+                    <svg viewBox="0 0 420 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="ctaGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.25" />
+                                <stop offset="100%" stop-color="#D4AF37" stop-opacity="0" />
+                            </radialGradient>
+                            <linearGradient id="ctaLineGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#1C3353" stop-opacity="0.15" />
+                                <stop offset="50%" stop-color="#D4AF37" stop-opacity="0.3" />
+                                <stop offset="100%" stop-color="#1C3353" stop-opacity="0.15" />
+                            </linearGradient>
+                        </defs>
+
+                        <circle cx="210" cy="180" r="170" fill="url(#ctaGlow)" />
+
+                        <circle cx="210" cy="180" r="130" stroke="url(#ctaLineGrad)" stroke-width="1" fill="none" stroke-dasharray="6 8" />
+
+                        <circle cx="210" cy="100" r="40" fill="#1C3353" opacity="0.08" />
+                        <circle cx="120" cy="210" r="35" fill="#1C3353" opacity="0.06" />
+                        <circle cx="300" cy="210" r="35" fill="#1C3353" opacity="0.06" />
+                        <circle cx="210" cy="270" r="30" fill="#1C3353" opacity="0.05" />
+
+                        <path d="M210 100 L120 210 L210 270 L300 210 Z" stroke="#D4AF37" stroke-width="1.5" fill="none" opacity="0.4" />
+                        <path d="M210 100 L210 270" stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.25" />
+                        <path d="M120 210 L300 210" stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.25" />
+                        <path d="M165 150 L255 150 L255 200 L165 200 Z" stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.2" stroke-dasharray="3 4" />
+
+                        <circle cx="210" cy="100" r="16" fill="#1C3353" />
+                        <circle cx="210" cy="100" r="7" fill="#D4AF37" />
+                        <circle cx="120" cy="210" r="14" fill="#1C3353" />
+                        <circle cx="120" cy="210" r="5" fill="#D4AF37" />
+                        <circle cx="300" cy="210" r="14" fill="#1C3353" />
+                        <circle cx="300" cy="210" r="5" fill="#D4AF37" />
+                        <circle cx="210" cy="270" r="12" fill="#1C3353" />
+                        <circle cx="210" cy="270" r="4" fill="#D4AF37" />
+
+                        <circle cx="160" cy="140" r="4" fill="#D4AF37" opacity="0.6" />
+                        <circle cx="260" cy="140" r="4" fill="#D4AF37" opacity="0.6" />
+                        <circle cx="160" cy="240" r="3" fill="#D4AF37" opacity="0.4" />
+                        <circle cx="260" cy="240" r="3" fill="#D4AF37" opacity="0.4" />
+
+                        <path d="M203 93 L210 87 L217 93 L213 95 L213 101 L210 103 L207 101 L207 95 Z" fill="#F6F0D6" />
+                        <path d="M210 87 L210 95" stroke="#F6F0D6" stroke-width="1" />
+                        <path d="M203 93 L217 93" stroke="#F6F0D6" stroke-width="0.8" />
+
+                        <path d="M114 204 Q120 196 126 204" stroke="#D4AF37" stroke-width="1.5" fill="none" />
+                        <path d="M114 210 Q120 202 126 210" stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.5" />
+
+                        <path d="M294 204 Q300 196 306 204" stroke="#D4AF37" stroke-width="1.5" fill="none" />
+                        <path d="M294 210 Q300 202 306 210" stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.5" />
+
+                        <circle cx="210" cy="180" r="48" fill="none" stroke="#D4AF37" stroke-width="1.5" opacity="0.25" />
+                        <circle cx="210" cy="180" r="48" fill="#D4AF37" opacity="0.06" />
+
+                        <path d="M195 172 L210 162 L225 172 L220 176 L220 186 L210 191 L200 186 L200 176 Z" fill="#1C3353" opacity="0.15" />
+                        <path d="M195 172 L210 162 L225 172" stroke="#D4AF37" stroke-width="1.5" fill="none" />
+                        <line x1="210" y1="162" x2="210" y2="176" stroke="#D4AF37" stroke-width="1.5" />
+                        <line x1="200" y1="176" x2="220" y2="176" stroke="#D4AF37" stroke-width="1.5" />
+
+                        <circle cx="175" cy="95" r="3" fill="#D4AF37" opacity="0.3" />
+                        <circle cx="245" cy="95" r="3" fill="#D4AF37" opacity="0.3" />
+                        <circle cx="100" cy="170" r="3" fill="#D4AF37" opacity="0.25" />
+                        <circle cx="320" cy="170" r="3" fill="#D4AF37" opacity="0.25" />
+                        <circle cx="210" cy="310" r="3" fill="#D4AF37" opacity="0.2" />
+                        <circle cx="210" cy="60" r="3" fill="#D4AF37" opacity="0.2" />
+                        <circle cx="150" cy="280" r="2.5" fill="#D4AF37" opacity="0.2" />
+                        <circle cx="270" cy="280" r="2.5" fill="#D4AF37" opacity="0.2" />
+                    </svg>
                 </div>
             </div>
         </div>

@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - CampNect</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+            background: #F6F0D6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bg-circle-1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
+            top: -200px; right: -150px;
+        }
+        .bg-circle-2 {
+            width: 450px; height: 450px;
+            background: radial-gradient(circle, rgba(28,51,83,0.05) 0%, transparent 70%);
+            bottom: -150px; left: -100px;
+        }
+        .bg-circle-3 {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%);
+            bottom: 10%; right: 10%;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 800;
+            color: #1C3353;
+            line-height: 1;
+            letter-spacing: -4px;
+            position: relative;
+            display: inline-block;
+        }
+        .error-code span {
+            color: #D4AF37;
+        }
+
+        .error-divider {
+            width: 60px;
+            height: 4px;
+            background: #D4AF37;
+            border-radius: 4px;
+            margin: 1.5rem auto;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1C3353;
+            margin-bottom: 0.8rem;
+        }
+
+        .error-text {
+            font-size: 0.95rem;
+            color: #5a7a8c;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-btn {
+            font-family: 'Poppins', system-ui, sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.8rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .error-btn-primary {
+            background: #1C3353;
+            color: #F6F0D6;
+            box-shadow: 0 4px 14px rgba(28,51,83,0.2);
+        }
+        .error-btn-primary:hover {
+            background: #284774;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(28,51,83,0.3);
+        }
+
+        .error-btn-secondary {
+            background: transparent;
+            color: #1C3353;
+            border: 2px solid #1C3353;
+        }
+        .error-btn-secondary:hover {
+            background: #1C3353;
+            color: #F6F0D6;
+            transform: translateY(-2px);
+        }
+
+        .error-brand {
+            margin-bottom: 2rem;
+        }
+        .error-brand .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1C3353;
+            letter-spacing: -1px;
+        }
+
+        @media (max-width: 600px) {
+            .error-code { font-size: 5rem; letter-spacing: -2px; }
+            .error-title { font-size: 1.2rem; }
+            .error-text { font-size: 0.85rem; }
+            .container { padding: 1.5rem; }
+            .error-actions { flex-direction: column; align-items: center; }
+            .error-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+
+    <div class="container">
+        <div class="error-brand">
+            <span class="logo-text">CampNect</span>
+        </div>
+
+        <div class="error-code">4<span>0</span>4</div>
+
+        <div class="error-divider"></div>
+
+        <h1 class="error-title">Page Not Found</h1>
+
+        <p class="error-text">
+            The page you're looking for doesn't exist or has been moved.<br>
+            Let's get you back on track.
+        </p>
+
+        <div class="error-actions">
+            <a href="/" class="error-btn error-btn-primary">
+                <i class="fas fa-house"></i> Go to Homepage
+            </a>
+            <a href="/contact/" class="error-btn error-btn-secondary">
+                <i class="fas fa-headset"></i> Contact Support
+            </a>
+        </div>
+    </div>
+</body>
+</html>

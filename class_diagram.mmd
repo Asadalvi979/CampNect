@@ -1,0 +1,255 @@
+classDiagram
+    class UserManager {
+        +create_user(cms, password, **extra_fields) User
+        +create_superuser(cms, password, **extra_fields) User
+    }
+
+    class User {
+        +cms: CharField (unique, login ID)
+        +role: CharField (student|senior|alumni|admin)
+        +semester: IntegerField (1-8)
+        +department: CharField
+        +is_email_verified: BooleanField
+        +bio: TextField
+        +skills: CharField (comma-separated)
+        +profile_pic: ImageField
+        +graduation_year: IntegerField
+        +current_company: CharField
+        +current_position: CharField
+        +industry: CharField
+        +USERNAME_FIELD = 'cms'
+        +REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'role']
+        +can_connect_with_alumni() bool
+        +is_student_or_senior() bool
+        +clean_semester() void
+    }
+
+    class OTP {
+        +user: ForeignKey (User, nullable)
+        +email: EmailField (nullable)
+        +code: CharField (6 chars)
+        +created_at: DateTimeField
+        +expires_at: DateTimeField
+        +is_expired() bool
+    }
+
+    class Community {
+        +name: CharField
+        +description: TextField
+        +category: CharField (CS|SE|AI|General)
+        +message_permission: CharField (all_members|admins_only)
+        +created_by: ForeignKey (User)
+        +created_at: DateTimeField
+    }
+
+    class CommunityMember {
+        +user: ForeignKey (User)
+        +community: ForeignKey (Community)
+        +is_admin: BooleanField
+        +role: CharField (member|moderator|founder)
+        +joined_at: DateTimeField
+        +unique_together: (user, community)
+        +is_moderator_or_above() bool
+    }
+
+    class Discussion {
+        +community: ForeignKey (Community)
+        +user: ForeignKey (User)
+        +content: TextField
+        +post_date: DateTimeField
+    }
+
+    class CommunityMessage {
+        +community: ForeignKey (Community)
+        +sender: ForeignKey (User)
+        +text: TextField
+        +file: FileField (nullable)
+        +timestamp: DateTimeField
+    }
+
+    class Note {
+        +title: CharField
+        +subject: CharField
+        +semester: IntegerField (nullable)
+        +description: TextField
+        +file: FileField
+        +uploaded_by: ForeignKey (User)
+        +community: ForeignKey (Community, nullable)
+        +upload_date: DateTimeField
+    }
+
+    class Message {
+        +sender: ForeignKey (User)
+        +receiver: ForeignKey (User)
+        +text: TextField
+        +file: FileField (nullable)
+        +timestamp: DateTimeField
+    }
+
+    class Announcement {
+        +title: CharField
+        +content: TextField
+        +posted_by: ForeignKey (User)
+        +by_line: CharField
+        +date_posted: DateTimeField
+        +is_pinned: BooleanField
+        +get_by_line() str
+    }
+
+    class AnnouncementLike {
+        +user: ForeignKey (User)
+        +announcement: ForeignKey (Announcement)
+    }
+
+    class AnnouncementComment {
+        +user: ForeignKey (User)
+        +announcement: ForeignKey (Announcement)
+        +parent: ForeignKey (self, nullable)
+        +content: TextField
+        +created_at: DateTimeField
+    }
+
+    class CollaborationPost {
+        +title: CharField
+        +description: TextField
+        +required_skills: TextField
+        +roles_needed: TextField
+        +posted_by: ForeignKey (User)
+        +mentor: ForeignKey (User, nullable)
+        +date_posted: DateTimeField
+        +get_skills_list() list
+        +get_roles_list() list
+    }
+
+    class CollaborationMessage {
+        +post: ForeignKey (CollaborationPost)
+        +sender: ForeignKey (User)
+        +text: TextField
+        +file: FileField (nullable)
+        +timestamp: DateTimeField
+    }
+
+    class CollaborationPostLike {
+        +user: ForeignKey (User)
+        +post: ForeignKey (CollaborationPost)
+    }
+
+    class CollaborationPostComment {
+        +user: ForeignKey (User)
+        +post: ForeignKey (CollaborationPost)
+        +parent: ForeignKey (self, nullable)
+        +content: TextField
+        +created_at: DateTimeField
+    }
+
+    class CollaborationPostInterest {
+        +user: ForeignKey (User)
+        +post: ForeignKey (CollaborationPost)
+        +status: CharField (interested|team|declined)
+    }
+
+    class Mentorship {
+        +mentor: ForeignKey (User)
+        +mentee: ForeignKey (User)
+        +created_at: DateTimeField
+        +status: CharField (pending|accepted|rejected)
+    }
+
+    class MentorshipMessage {
+        +mentorship: ForeignKey (Mentorship)
+        +sender: ForeignKey (User)
+        +text: TextField
+        +timestamp: DateTimeField
+    }
+
+    class MentorshipRequest {
+        +student: ForeignKey (User)
+        +alumni: ForeignKey (User)
+        +subject: CharField
+        +reason: TextField
+        +status: CharField (pending|accepted|rejected)
+        +created_at: DateTimeField
+    }
+
+    class Connection {
+        +follower: ForeignKey (User)
+        +following: ForeignKey (User)
+        +created_at: DateTimeField
+    }
+
+    class Event {
+        +title: CharField
+        +description: TextField
+        +date: DateField
+        +time: TimeField
+        +location: CharField
+        +posted_by: ForeignKey (User)
+        +created_at: DateTimeField
+    }
+
+    class Notification {
+        +recipient: ForeignKey (User)
+        +sender: ForeignKey (User, nullable)
+        +notification_type: CharField
+        +title: CharField
+        +message: TextField
+        +related_object_id: IntegerField (nullable)
+        +is_read: BooleanField
+        +created_at: DateTimeField
+    }
+
+    class CareerOpportunity {
+        +title: CharField
+        +company: CharField
+        +description: TextField
+        +location: CharField
+        +apply_url: URLField
+        +posted_by: ForeignKey (User)
+        +opp_type: CharField (internship|job)
+        +created_at: DateTimeField
+    }
+
+    AbstractUser <|-- User : extends
+    UserManager ..> User : creates
+
+    User "1" --> "0..*" OTP
+    User "1" --> "0..*" Community : created_by
+    User "1" --> "0..*" CommunityMember
+    Community "1" --> "0..*" CommunityMember
+    Community "1" --> "0..*" Discussion
+    User "1" --> "0..*" Discussion
+    Community "1" --> "0..*" CommunityMessage
+    User "1" --> "0..*" CommunityMessage
+    Community "1" --> "0..*" Note
+    User "1" --> "0..*" Note : uploaded_by
+    User "1" --> "0..*" Message : sender
+    User "1" --> "0..*" Message : receiver
+    User "1" --> "0..*" Announcement : posted_by
+    Announcement "1" --> "0..*" AnnouncementLike
+    User "1" --> "0..*" AnnouncementLike
+    Announcement "1" --> "0..*" AnnouncementComment
+    User "1" --> "0..*" AnnouncementComment
+    AnnouncementComment "0..1" --> "0..*" AnnouncementComment : parent (self-ref)
+    User "1" --> "0..*" CollaborationPost : posted_by
+    User "0..1" --> "0..*" CollaborationPost : mentor
+    CollaborationPost "1" --> "0..*" CollaborationMessage
+    User "1" --> "0..*" CollaborationMessage
+    CollaborationPost "1" --> "0..*" CollaborationPostLike
+    User "1" --> "0..*" CollaborationPostLike
+    CollaborationPost "1" --> "0..*" CollaborationPostComment
+    User "1" --> "0..*" CollaborationPostComment
+    CollaborationPostComment "0..1" --> "0..*" CollaborationPostComment : parent (self-ref)
+    CollaborationPost "1" --> "0..*" CollaborationPostInterest
+    User "1" --> "0..*" CollaborationPostInterest
+    User "1" --> "0..*" Mentorship : mentor
+    User "1" --> "0..*" Mentorship : mentee
+    Mentorship "1" --> "0..*" MentorshipMessage
+    User "1" --> "0..*" MentorshipMessage
+    User "1" --> "0..*" MentorshipRequest : student
+    User "1" --> "0..*" MentorshipRequest : alumni
+    User "1" --> "0..*" Connection : follower
+    User "1" --> "0..*" Connection : following
+    User "1" --> "0..*" Event : posted_by
+    User "1" --> "0..*" CareerOpportunity : posted_by
+    User "1" --> "0..*" Notification : recipient
+    User "0..1" --> "0..*" Notification : sender
