@@ -1,4 +1,5 @@
 cd CampNect_Backend
-python manage.py migrate --noinput || true
-python manage.py collectstatic --noinput || true
+python manage.py migrate --noinput
+python manage.py seed_data
+python manage.py collectstatic --noinput
 gunicorn CampNect_Backend.wsgi --bind 0.0.0.0:$PORT
