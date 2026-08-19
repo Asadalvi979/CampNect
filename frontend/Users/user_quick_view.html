@@ -54,10 +54,10 @@ function showUserQuickView(userId) {
 
             var avatarEl = document.getElementById('uqvAvatar');
             if (d.profile_pic) {
-                avatarEl.innerHTML = '<img src="' + d.profile_pic + '" alt="" style="width:100%;height:100%;object-fit:cover;">';
+                avatarEl.innerHTML = '<img src="' + escHtml(d.profile_pic) + '" alt="" style="width:100%;height:100%;object-fit:cover;">';
             } else {
                 var initials = d.name.split(' ').map(function(s) { return s[0]; }).join('').substring(0, 2).toUpperCase();
-                avatarEl.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(135deg,#1C3353,#3a7a5e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.5rem;">' + initials + '</div>';
+                avatarEl.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(135deg,#1C3353,#3a7a5e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.5rem;">' + escHtml(initials) + '</div>';
             }
 
             var skillsEl = document.getElementById('uqvSkills');

@@ -1,4 +1,3 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -10,6 +9,7 @@ from ..models import User, Mentorship, MentorshipRequest, MentorshipMessage, Con
 from ..permissions import is_alumni, is_senior_student
 from ..forms import MentorshipRequestForm
 from .utils import validate_uploaded_file
+from ..consumers import broadcast_message
 
 
 @login_required
@@ -168,9 +168,9 @@ def mentorship_view(request):
     communities_count = CommunityMember.objects.filter(user=request.user).count()
     context = {
         'mentors': mentors,
-        'mentors_json': json.dumps(mentors_data),
+        'mentors_data': mentors_data,
         'my_mentorships': my_mentorships,
-        'mentorship_requests_json': json.dumps(requests_data),
+        'mentorship_requests_data': requests_data,
         'connections_count': connections_count,
         'communities_count': communities_count,
     }
@@ -206,10 +206,11 @@ def mentorship_chat_view(request, mentorship_id):
                 if file_error:
                     messages.error(request, file_error)
                     return redirect('mentorship_chat', mentorship_id=mentorship.id)
-            MentorshipMessage.objects.create(mentorship=mentorship, sender=request.user, text=text, file=uploaded_file)
+            msg = MentorshipMessage.objects.create(mentorship=mentorship, sender=request.user, text=text, file=uploaded_file)
+            broadcast_message(f'mentorship_{mentorship.id}', msg)
         return redirect('mentorship_chat', mentorship_id=mentorship.id)
 
-    messages_list = MentorshipMessage.objects.filter(mentorship=mentorship).order_by('timestamp')
+    messages_list = MentorshipMessage.objects.filter(mentorship=mentorship).select_related('sender').order_by('timestamp')
     connections_count = Connection.objects.filter(Q(follower=request.user) | Q(following=request.user)).count()
     communities_count = CommunityMember.objects.filter(user=request.user).count()
 
@@ -251,11 +252,12 @@ def alumni_list_api(request):
         except ValueError:
             pass
     data = []
+    alumni_ids = [a.id for a in alumni]
+    req_map = {}
+    for r in MentorshipRequest.objects.filter(student=request.user, alumni_id__in=alumni_ids).values('alumni_id', 'status'):
+        req_map[r['alumni_id']] = r['status']
     for a in alumni:
-        existing_request = MentorshipRequest.objects.filter(student=request.user, alumni=a).first()
-        request_status = None
-        if existing_request:
-            request_status = existing_request.status
+        request_status = req_map.get(a.id)
         data.append({
             'id': a.id,
             'name': a.get_full_name() or a.cms,

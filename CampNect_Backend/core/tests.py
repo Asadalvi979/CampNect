@@ -1,8 +1,11 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import timedelta
-from .models import User, OTP, Community, CommunityMember, Note, Announcement, CollaborationPost, Message, Connection, Mentorship, Notification, ContactMessage
+import tempfile
+from .models import User, OTP, Community, CommunityMember, Note, Announcement, CollaborationPost, Message, Connection, Mentorship, Notification, ContactMessage, CommunityMessage, MentorshipMessage, CollaborationMessage
 
 TEST_EMAIL = 'test@riphah.edu.pk'
 TEST_PASS = 'pass123'
@@ -41,6 +44,40 @@ class UserModelTests(TestCase):
         self.assertTrue(admin.is_staff)
         self.assertTrue(admin.is_superuser)
         self.assertEqual(admin.role, 'admin')
+
+    def test_clean_semester_out_of_range(self):
+        self.user.semester = 9
+        with self.assertRaises(ValidationError):
+            self.user.clean()
+
+    def test_clean_semester_valid(self):
+        self.user.semester = 4
+        self.user.clean()  # should not raise
+
+    def test_clean_semester_none_ok(self):
+        self.user.semester = None
+        self.user.clean()  # should not raise
+
+    def test_save_rejects_new_bad_semester(self):
+        user = User(cms='newsem', email='newsem@test.com', password='x', role='student', semester=9)
+        with self.assertRaises(ValidationError):
+            user.save()
+
+    def test_save_partial_update_does_not_brick_legacy_bad_semester(self):
+        # Simulate a legacy user with an out-of-range semester value in the DB
+        # (written before validation existed) by bypassing save().
+        User.objects.filter(pk=self.user.pk).update(semester=9)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.semester, 9)
+        # System-level partial writes (e.g. last_login, profile_pic) must not raise.
+        self.user.save(update_fields=['profile_pic'])
+        # A full save that does NOT change the (legacy bad) value must not raise either.
+        self.user.save()
+
+    def test_save_rejects_change_to_bad_semester_on_existing_user(self):
+        self.user.semester = 9
+        with self.assertRaises(ValidationError):
+            self.user.save()
 
 
 class OTPSystemTests(TestCase):
@@ -160,6 +197,17 @@ class ViewTests(TestCase):
         response = self.client.get(reverse('terms'))
         self.assertEqual(response.status_code, 200)
 
+    def test_custom_404_page(self):
+        response = self.client.get('/this-page-does-not-exist-12345/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+
+    def test_append_slash_redirect(self):
+        # Without the catch-all URL, APPEND_SLASH redirects /dashboard -> /dashboard/
+        response = self.client.get('/dashboard')
+        self.assertIn(response.status_code, [301, 302])
+        self.assertTrue(response.url.endswith('/dashboard/'))
+
 
 class ContactFormTests(TestCase):
     def setUp(self):
@@ -217,3 +265,168 @@ class NotificationModelTests(TestCase):
         self.assertIn(Notification.Type.NEW_MESSAGE, [t[0] for t in Notification.Type.choices])
         self.assertIn(Notification.Type.CONNECTION, [t[0] for t in Notification.Type.choices])
         self.assertIn(Notification.Type.COMMUNITY_JOIN, [t[0] for t in Notification.Type.choices])
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class MediaAccessTests(TestCase):
+    """Protected media: files are only served to authorized users."""
+
+    def setUp(self):
+        self.alice = User.objects.create_user(cms='alice', email='alice@test.com', password=TEST_PASS, role='student', semester=6)
+        self.bob = User.objects.create_user(cms='bob', email='bob@test.com', password=TEST_PASS, role='student', semester=6)
+        self.eve = User.objects.create_user(cms='eve', email='eve@test.com', password=TEST_PASS, role='student', semester=3)
+        self.client_alice = Client(); self.client_alice.login(cms='alice', password=TEST_PASS)
+        self.client_bob = Client(); self.client_bob.login(cms='bob', password=TEST_PASS)
+        self.client_eve = Client(); self.client_eve.login(cms='eve', password=TEST_PASS)
+
+    def _file(self, name):
+        return SimpleUploadedFile(name, b'campnect-file-content', content_type='text/plain')
+
+    def _get(self, client, file_field):
+        return client.get('/media/' + file_field.name)
+
+    def test_media_requires_login(self):
+        msg = Message.objects.create(sender=self.alice, receiver=self.bob, text='hi', file=self._file('hi.txt'))
+        resp = Client().get('/media/' + msg.file.name)
+        self.assertIn(resp.status_code, [301, 302])  # redirected to login
+
+    def test_dm_file_sender_receiver_only(self):
+        msg = Message.objects.create(sender=self.alice, receiver=self.bob, text='hi', file=self._file('hi.txt'))
+        self.assertEqual(self._get(self.client_alice, msg.file).status_code, 200)
+        self.assertEqual(self._get(self.client_bob, msg.file).status_code, 200)
+        self.assertEqual(self._get(self.client_eve, msg.file).status_code, 403)
+
+    def test_community_file_members_only(self):
+        comm = Community.objects.create(name='CS Club', created_by=self.alice)
+        CommunityMember.objects.create(user=self.alice, community=comm)
+        cm = CommunityMessage.objects.create(community=comm, sender=self.alice, text='x', file=self._file('note.pdf'))
+        self.assertEqual(self._get(self.client_alice, cm.file).status_code, 200)
+        self.assertEqual(self._get(self.client_bob, cm.file).status_code, 403)
+
+    def test_mentorship_file_participants_only(self):
+        m = Mentorship.objects.create(mentor=self.alice, mentee=self.bob, status='accepted')
+        mm = MentorshipMessage.objects.create(mentorship=m, sender=self.alice, text='x', file=self._file('guide.pdf'))
+        self.assertEqual(self._get(self.client_alice, mm.file).status_code, 200)
+        self.assertEqual(self._get(self.client_bob, mm.file).status_code, 200)
+        self.assertEqual(self._get(self.client_eve, mm.file).status_code, 403)
+
+    def test_notes_and_profiles_any_authenticated_user(self):
+        note = Note.objects.create(title='Notes', subject='Math', file=self._file('math.pdf'), uploaded_by=self.alice)
+        self.assertEqual(self._get(self.client_eve, note.file).status_code, 200)
+
+    def test_unknown_media_path_404(self):
+        resp = self.client_alice.get('/media/chat_files/does-not-exist.txt')
+        self.assertEqual(resp.status_code, 404)
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class AdminApiTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(cms='admin1', email='admin1@test.com', password=TEST_PASS, role='admin')
+        self.admin.is_staff = True
+        self.admin.save()
+        self.client.login(cms='admin1', password=TEST_PASS)
+
+    def _post(self, **data):
+        return self.client.post('/admin-api/', data)
+
+    def test_admin_cannot_demote_self(self):
+        resp = self._post(action='update_user', user_id=self.admin.id, role='student')
+        self.assertEqual(resp.status_code, 400)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.role, 'admin')
+
+    def test_admin_cannot_deactivate_self(self):
+        resp = self._post(action='update_user', user_id=self.admin.id, is_active='0')
+        self.assertEqual(resp.status_code, 400)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_active)
+
+    def test_admin_can_update_other_users(self):
+        other = User.objects.create_user(cms='stu1', email='stu1@test.com', password=TEST_PASS, role='student')
+        resp = self._post(action='update_user', user_id=other.id, role='senior', is_active='1')
+        self.assertEqual(resp.status_code, 200)
+        other.refresh_from_db()
+        self.assertEqual(other.role, 'senior')
+
+    def test_admin_cannot_delete_self(self):
+        resp = self._post(action='delete_user', user_id=self.admin.id)
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(User.objects.filter(id=self.admin.id).exists())
+
+    def test_admin_delete_user_removes_note_file(self):
+        other = User.objects.create_user(cms='stu2', email='stu2@test.com', password=TEST_PASS, role='student')
+        note = Note.objects.create(title='T', subject='S', file=SimpleUploadedFile('del.pdf', b'x', content_type='application/pdf'), uploaded_by=other)
+        file_name = note.file.name
+        resp = self._post(action='delete_user', user_id=other.id)
+        self.assertEqual(resp.status_code, 200)
+        from django.core.files.storage import default_storage
+        self.assertFalse(default_storage.exists(file_name))
+        self.assertFalse(Note.objects.filter(id=note.id).exists())
+
+    def test_admin_delete_note_removes_file(self):
+        other = User.objects.create_user(cms='stu3', email='stu3@test.com', password=TEST_PASS, role='student')
+        note = Note.objects.create(title='T', subject='S', file=SimpleUploadedFile('del2.pdf', b'x', content_type='application/pdf'), uploaded_by=other)
+        file_name = note.file.name
+        resp = self._post(action='delete_note', note_id=note.id)
+        self.assertEqual(resp.status_code, 200)
+        from django.core.files.storage import default_storage
+        self.assertFalse(default_storage.exists(file_name))
+        self.assertFalse(Note.objects.filter(id=note.id).exists())
+
+
+class DashboardPaginationTests(TestCase):
+    """The feed shares one ?page= param across announcements and collab posts."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            cms='pageuser', email='page@riphah.edu.pk', password='pass123',
+            first_name='Page', last_name='User', role='student', semester=6,
+            is_active=True, is_email_verified=True,
+        )
+        self.client.login(cms='pageuser', password='pass123')
+
+    def test_prev_link_shown_when_only_collab_posts_have_earlier_page(self):
+        Announcement.objects.create(title='Only ann', content='x', posted_by=self.user)
+        for i in range(15):
+            CollaborationPost.objects.create(title=f'Post {i}', description='x', posted_by=self.user)
+        response = self.client.get(reverse('dashboard'), {'page': 2, 'tab': 'all'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Previous')
+        self.assertContains(response, '?page=1&amp;tab=all')
+
+    def test_next_link_hidden_when_no_more_pages(self):
+        Announcement.objects.create(title='Only ann', content='x', posted_by=self.user)
+        for i in range(3):
+            CollaborationPost.objects.create(title=f'Post {i}', description='x', posted_by=self.user)
+        response = self.client.get(reverse('dashboard'), {'page': 1})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Next')
+
+
+class ChatDeleteTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.alice = User.objects.create_user(
+            cms='chatalice', email='alice@riphah.edu.pk', password='pass123',
+            role='student', semester=6, is_active=True, is_email_verified=True,
+        )
+        self.bob = User.objects.create_user(
+            cms='chatbob', email='bob@riphah.edu.pk', password='pass123',
+            role='student', semester=6, is_active=True, is_email_verified=True,
+        )
+        self.client.login(cms='chatalice', password='pass123')
+        self.msg = Message.objects.create(sender=self.alice, receiver=self.bob, text='hello')
+
+    def test_ajax_delete_removes_message(self):
+        resp = self.client.post(reverse('chat'), {'action': 'delete_message', 'message_id': self.msg.id, '_ajax': '1'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.json()['ok'])
+        self.assertFalse(Message.objects.filter(id=self.msg.id).exists())
+
+    def test_delete_broadcast_safe_without_channels(self):
+        # broadcast_message_deleted must silently no-op when Channels is unavailable.
+        from .consumers import broadcast_message_deleted
+        broadcast_message_deleted('chat_1_2', 999)  # should not raise
+        self.assertTrue(Message.objects.filter(id=self.msg.id).exists())

@@ -26,7 +26,7 @@ def alumni_directory_view(request):
 @login_required
 def notifications_api(request):
     if request.method == 'GET':
-        notifications = Notification.objects.filter(recipient=request.user)[:20]
+        notifications = Notification.objects.filter(recipient=request.user).select_related('sender')[:20]
         data = []
         for n in notifications:
             data.append({

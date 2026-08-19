@@ -1,13 +1,24 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-replace-me-in-production')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# SECURITY: fail loudly in production instead of falling back to a known-insecure key.
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-dev-only-key-not-for-production'
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY environment variable must be set when DEBUG=False.'
+        )
+
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
@@ -19,6 +30,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
 ]
+
+# Real-time chat (Django Channels). Gracefully skipped when channels is not
+# installed or is incompatible with the installed Django version.
+try:
+    import channels  # noqa: F401
+    import daphne  # noqa: F401
+    INSTALLED_APPS = ['daphne', 'channels'] + INSTALLED_APPS
+except Exception:
+    pass
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,6 +74,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'CampNect_Backend.wsgi.application'
+ASGI_APPLICATION = 'CampNect_Backend.asgi.application'
+
+# In-memory channel layer (single-process). Swap for channels_redis when scaling to multiple workers.
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 DATABASES = {
     'default': {

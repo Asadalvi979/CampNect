@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderAlumni(alumni) {
         grid.innerHTML = alumni.map(function (a) {
             var avatarHtml = a.profile_pic
-                ? '<img src="' + a.profile_pic + '" alt="' + escHtml(a.name) + '">'
+                ? '<img src="' + escHtml(a.profile_pic) + '" alt="' + escHtml(a.name) + '">'
                 : '<span class="ad-initials">' + escHtml(a.initials) + '</span>';
 
             var companyHtml = '';
@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 var name = d.name;
                 var initial = name ? name.charAt(0).toUpperCase() : 'U';
                 var avatarHtml = d.profile_pic
-                    ? '<img src="' + d.profile_pic + '" alt="' + escHtml(name) + '">'
-                    : '<div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1C3353,#3a7a5e);color:#F6F0D6;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;border:3px solid #F6F0D6;">' + initial + '</div>';
+                    ? '<img src="' + escHtml(d.profile_pic) + '" alt="' + escHtml(name) + '">'
+                    : '<div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1C3353,#3a7a5e);color:#F6F0D6;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;border:3px solid #F6F0D6;">' + escHtml(initial) + '</div>';
                 document.getElementById('uvAvatar').innerHTML = avatarHtml;
                 document.getElementById('uvName').textContent = name;
                 var badges = '<span class="uv-badge role">' + escHtml(d.role_slug) + '</span>';

@@ -4,10 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.template.loader import render_to_string
-import json
 from ..models import CollaborationPost, CollaborationPostInterest, CollaborationMessage, Connection, CommunityMember
 from ..forms import CollaborationPostForm
 from .utils import validate_uploaded_file
+from ..consumers import broadcast_message
 
 
 @login_required
@@ -49,7 +49,7 @@ def collaboration_view(request):
         'posts': posts,
         'connections_count': connections_count,
         'communities_count': communities_count,
-        'interested_ids': json.dumps(interested_ids),
+        'interested_ids': interested_ids,
     }
     return render(request, 'collaboration.html', context)
 
@@ -76,10 +76,11 @@ def collaboration_chat_view(request, post_id):
                 if file_error:
                     messages.error(request, file_error)
                     return redirect('collaboration_chat', post_id=post.id)
-            CollaborationMessage.objects.create(post=post, sender=request.user, text=text, file=uploaded_file)
+            msg = CollaborationMessage.objects.create(post=post, sender=request.user, text=text, file=uploaded_file)
+            broadcast_message(f'collaboration_{post.id}', msg)
         return redirect('collaboration_chat', post_id=post.id)
 
-    messages_list = CollaborationMessage.objects.filter(post=post).order_by('timestamp')
+    messages_list = CollaborationMessage.objects.filter(post=post).select_related('sender').order_by('timestamp')
     connections_count = Connection.objects.filter(Q(follower=request.user) | Q(following=request.user)).count()
     communities_count = CommunityMember.objects.filter(user=request.user).count()
 

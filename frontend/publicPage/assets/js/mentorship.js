@@ -1,8 +1,13 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
   var user = window.currentUser || getCurrentUser();
   if (!user) { return; }
-  var mentorData = window.mentorsData || [];
-  var requestData = window.mentorshipRequestsData || [];
+  function readJSONData(id) {
+    var el = document.getElementById(id);
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+  }
+  var mentorData = readJSONData('mentors-data');
+  var requestData = readJSONData('mentorship-requests-data');
   initMentorshipTabs(mentorData, requestData);
   var initialFilter = user.role === 'alumni' ? 'requests' : 'available';
   renderMentors(initialFilter, mentorData, requestData);
@@ -38,11 +43,11 @@
     if (term) { list = list.filter(function (m) { return m.name.toLowerCase().includes(term); }); }
     newMentorshipList.innerHTML = list.map(function (m) {
       var avatar = m.profile_pic
-        ? '<img src="' + m.profile_pic + '" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:50%;">'
-        : '<div style="width:40px;height:40px;border-radius:50%;background:#1C3353;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">' + (m.name ? m.name.split(' ').map(function (s) { return s[0]; }).join('').substring(0, 2).toUpperCase() : '?') + '</div>';
+        ? '<img src="' + escHtml(m.profile_pic) + '" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:50%;">'
+        : '<div style="width:40px;height:40px;border-radius:50%;background:#1C3353;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;">' + (m.name ? escHtml(m.name.split(' ').map(function (s) { return s[0]; }).join('').substring(0, 2).toUpperCase()) : '?') + '</div>';
       return '<div class="new-msg-user-item" data-id="' + m.id + '" style="cursor:pointer;">' +
         avatar +
-        '<div class="conversation-info"><h4>' + m.name + '</h4><p>' + (m.dept || '') + ' \u2022 ' + (m.badge || m.role) + '</p></div>' +
+        '<div class="conversation-info"><h4>' + escHtml(m.name) + '</h4><p>' + escHtml(m.dept || '') + ' \u2022 ' + escHtml(m.badge || m.role) + '</p></div>' +
       '</div>';
     }).join('');
     document.querySelectorAll('#newMentorshipList .new-msg-user-item').forEach(function (item) {
@@ -160,8 +165,8 @@ function renderMentors(filter, mentorData, requestData) {
 
 function renderOldMentorCard(mentor, statusFilter) {
   var avatarHtml = mentor.profile_pic
-    ? '<img src="' + mentor.profile_pic + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
-    : (mentor.name ? mentor.name.split(' ').map(function (s) { return s[0]; }).join('').substring(0, 2).toUpperCase() : '?');
+    ? '<img src="' + escHtml(mentor.profile_pic) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    : (mentor.name ? escHtml(mentor.name.split(' ').map(function (s) { return s[0]; }).join('').substring(0, 2).toUpperCase()) : '?');
 
   var actionHtml = '';
   var ms = mentor.mentorship;
@@ -210,13 +215,13 @@ function renderOldMentorCard(mentor, statusFilter) {
       '<div class="mentor-avatar ' + mentor.role + '" style="overflow:hidden;">' + avatarHtml + '</div>' +
       '<div>' +
         '<h4>' + escHtml(mentor.name) + '</h4>' +
-        '<span class="mentor-badge ' + mentor.role + '">' + badgeText + '</span>' +
+        '<span class="mentor-badge ' + mentor.role + '">' + escHtml(badgeText) + '</span>' +
       '</div>' +
     '</div>' +
-    '<p>' + (mentor.bio || 'No bio yet.') + '</p>' +
+    '<p>' + escHtml(mentor.bio || 'No bio yet.') + '</p>' +
     (mentor.skills && mentor.skills.length ? '<div class="mentor-skills">' + mentor.skills.map(function (s) { return '<span class="mentor-skill">' + escHtml(s) + '</span>'; }).join('') + '</div>' : '') +
     '<div class="mentor-card-footer">' +
-      '<span>' + (mentor.dept || '') + (mentor.semester ? ' \u2022 Sem ' + mentor.semester : '') + '</span>' +
+      '<span>' + escHtml(mentor.dept || '') + (mentor.semester ? ' \u2022 Sem ' + escHtml(mentor.semester) : '') + '</span>' +
       actionHtml +
     '</div>' +
   '</div>';

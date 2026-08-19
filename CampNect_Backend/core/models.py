@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
 
@@ -59,6 +60,31 @@ class User(AbstractUser):
         if self.semester is not None and (self.semester < 1 or self.semester > 8):
             raise ValidationError({'semester': 'Semester must be between 1 and 8.'})
 
+    def clean(self):
+        super().clean()
+        self.clean_semester()
+
+    def save(self, *args, **kwargs):
+        self._enforce_semester_on_save(kwargs.get('update_fields'), kwargs.get('using'))
+        super().save(*args, **kwargs)
+
+    def _enforce_semester_on_save(self, update_fields, using=None):
+        """Reject an out-of-range semester only when it is genuinely being written.
+
+        System-level partial writes (e.g. Django's ``last_login`` update, profile
+        picture uploads) must never fail because of legacy data, so those pass
+        through untouched. Form-driven validation still runs in ``clean()``.
+        """
+        if self.semester is None or 1 <= self.semester <= 8:
+            return
+        if self._state.adding:
+            self.clean_semester()  # raises
+            return
+        if update_fields is not None and 'semester' not in update_fields:
+            return
+        persisted = User.objects.filter(pk=self.pk).using(using).values_list('semester', flat=True).first()
+        if persisted != self.semester:
+            self.clean_semester()  # raises
 
 
 class OTP(models.Model):

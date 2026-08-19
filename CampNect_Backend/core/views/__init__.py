@@ -8,3 +8,4 @@ from .mentorship_views import *
 from .admin_views import *
 from .api_views import *
 from .static_views import *
+from .media_views import *

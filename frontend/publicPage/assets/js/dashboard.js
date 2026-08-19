@@ -11,8 +11,9 @@ function initPage() {
   if (!user) return;
   updateUserProfile(user);
   filterSidebarNav(user);
-  initFeedTabs();
-  renderFeed('all');
+  var initialTab = feedTabFromUrl();
+  initFeedTabs(initialTab);
+  renderFeed(initialTab);
   initPostInteractions();
   initInlineComments();
 }
@@ -61,14 +62,38 @@ function filterSidebarNav(user) {
   });
 }
 
-function initFeedTabs() {
+function feedTabFromUrl() {
+  var m = window.location.search.match(/[?&]tab=([^&]+)/);
+  var tab = m ? decodeURIComponent(m[1]) : 'all';
+  return ['all', 'announcement', 'notes', 'collaboration'].indexOf(tab) !== -1 ? tab : 'all';
+}
+
+function syncFeedTab(filter) {
+  var url = new URL(window.location.href);
+  url.searchParams.set('tab', filter);
+  history.replaceState(null, '', url.toString());
+  document.querySelectorAll('.feed-page-btn').forEach(function (a) {
+    var href = new URL(a.href, window.location.origin);
+    href.searchParams.set('tab', filter);
+    a.href = href.toString();
+  });
+}
+
+function initFeedTabs(initialTab) {
   var feedTabs = document.querySelector('.feed-tabs');
   if (!feedTabs) return;
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    if (btn.getAttribute('data-filter') === initialTab) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
     btn.addEventListener('click', function () {
       document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      renderFeed(btn.getAttribute('data-filter'));
+      var filter = btn.getAttribute('data-filter');
+      renderFeed(filter);
+      syncFeedTab(filter);
     });
   });
 }
@@ -80,7 +105,7 @@ function getTypeLabel(type) {
 
 function makeAvatarHtml(avatar, name) {
   if (avatar) {
-    return '<img src="' + avatar + '" alt="" class="post-user-img">';
+    return '<img src="' + escHtml(avatar) + '" alt="" class="post-user-img">';
   }
   var initials = name ? name.charAt(0).toUpperCase() : '?';
   return '<div class="post-avatar">' + initials + '</div>';
@@ -115,7 +140,7 @@ function renderFeed(filter) {
     var safeTitle = sanitizeHtml(post.title || '');
     var safeContent = sanitizeHtml(post.content || '');
     var safeSubject = sanitizeHtml(post.subject || '');
-    var safeFileUrl = post.fileUrl ? post.fileUrl.replace(/"/g, '&quot;') : '';
+    var safeFileUrl = post.fileUrl ? escHtml(post.fileUrl) : '';
 
     if (post.type === 'notes') {
       extraHtml = '<span class="note-subject">' + safeSubject + '</span>';

@@ -79,7 +79,7 @@
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
-    window.interestedIds = {{ interested_ids|safe }};
 </script>
+{{ interested_ids|json_script:"interested-ids" }}
 <script src="{% static 'assets/js/collaboration.js' %}"></script>
 {% endblock %}

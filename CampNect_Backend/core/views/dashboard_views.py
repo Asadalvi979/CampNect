@@ -1,8 +1,8 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count, Q
 
 from ..models import (
@@ -132,8 +132,39 @@ def dashboard(request):
         return redirect('dashboard')
 
     # GET
-    announcements = Announcement.objects.select_related('posted_by').annotate(like_count=Count('likes'), comment_count=Count('comments')).order_by('-is_pinned', '-date_posted')
-    collab_posts = CollaborationPost.objects.select_related('posted_by', 'mentor').annotate(like_count=Count('likes'), comment_count=Count('comments')).order_by('-date_posted')
+    announcements_qs = Announcement.objects.select_related('posted_by').annotate(like_count=Count('likes'), comment_count=Count('comments')).order_by('-is_pinned', '-date_posted')
+    collab_posts_qs = CollaborationPost.objects.select_related('posted_by', 'mentor').annotate(like_count=Count('likes'), comment_count=Count('comments')).order_by('-date_posted')
+
+    # Paginate the feed (10 items per type per page)
+    page_number = request.GET.get('page', 1)
+    requested_tab = request.GET.get('tab', 'all')
+    active_feed_tab = requested_tab if requested_tab in ('all', 'announcement', 'notes', 'collaboration') else 'all'
+    announcements_page = Paginator(announcements_qs, 10).get_page(page_number)
+    collab_posts_page = Paginator(collab_posts_qs, 10).get_page(page_number)
+    announcements = announcements_page.object_list
+    collab_posts = collab_posts_page.object_list
+    # Both paginators share the same ?page= param but may have different page
+    # counts; only navigate when the respective paginator actually has a page.
+    if announcements_page.has_previous():
+        feed_has_prev = True
+        feed_prev = announcements_page.previous_page_number()
+    elif collab_posts_page.has_previous():
+        feed_has_prev = True
+        feed_prev = collab_posts_page.previous_page_number()
+    else:
+        feed_has_prev = False
+        feed_prev = None
+    # Both paginators share the same ?page= param but may have different page
+    # counts; only navigate when the respective paginator actually has a page.
+    if announcements_page.has_next():
+        feed_has_next = True
+        feed_next = announcements_page.next_page_number()
+    elif collab_posts_page.has_next():
+        feed_has_next = True
+        feed_next = collab_posts_page.next_page_number()
+    else:
+        feed_has_next = False
+        feed_next = None
     recent_notes = Note.objects.select_related('uploaded_by').all().order_by('-upload_date')[:5]
     user_community_ids = CommunityMember.objects.filter(user=request.user).values_list('community_id', flat=True)
     popular_communities = Community.objects.select_related('created_by').annotate(member_count=Count('members')).exclude(id__in=user_community_ids).order_by('-member_count')[:4]
@@ -182,6 +213,11 @@ def dashboard(request):
     context = {
         'announcements': announcements,
         'collab_posts': collab_posts,
+        'feed_has_prev': feed_has_prev,
+        'feed_has_next': feed_has_next,
+        'feed_prev': feed_prev,
+        'feed_next': feed_next,
+        'active_feed_tab': active_feed_tab,
         'recent_notes': recent_notes,
         'popular_communities': popular_communities,
         'connections_count': connections_count,
@@ -193,8 +229,8 @@ def dashboard(request):
         'mentorship_active': mentorship_active,
         'mentorship_pending_count': len(mentorship_pending),
         'mentorship_active_count': len(mentorship_active),
-        'liked_ann_ids': json.dumps(liked_ann_ids_list),
-        'liked_collab_ids': json.dumps(liked_collab_ids_list),
+        'liked_ann_ids': liked_ann_ids_list,
+        'liked_collab_ids': liked_collab_ids_list,
         'liked_ann_set': liked_ann_ids_list,
         'liked_collab_set': liked_collab_ids_list,
         'is_senior_student': is_senior,
@@ -224,13 +260,24 @@ def profile_view(request):
                 user.semester = int(semester)
             except ValueError:
                 pass
+        if user.semester is not None and (user.semester < 1 or user.semester > 8):
+            messages.error(request, 'Semester must be between 1 and 8.')
+            return redirect('profile')
         if 'profile_pic' in request.FILES:
             file_error = validate_uploaded_file(request.FILES['profile_pic'], allowed_extensions=['png', 'jpg', 'jpeg', 'gif', 'webp'], max_size_mb=5)
             if file_error:
                 messages.error(request, file_error)
                 return redirect('profile')
+            old_pic = user.profile_pic
             user.profile_pic = request.FILES['profile_pic']
-        user.save()
+            user.save()
+            if old_pic and old_pic.name:
+                try:
+                    old_pic.delete(save=False)
+                except Exception:
+                    pass
+        else:
+            user.save()
         messages.success(request, 'Profile updated successfully.')
         return redirect('profile')
 
@@ -253,6 +300,34 @@ def profile_view(request):
         'user_memberships': user_memberships,
     }
     return render(request, 'profile.html', context)
+
+
+@login_required
+def upload_profile_pic_api(request):
+    try:
+        if request.method != 'POST':
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+        if 'profile_pic' not in request.FILES:
+            return JsonResponse({'error': 'No file provided'}, status=400)
+        file = request.FILES['profile_pic']
+        file_error = validate_uploaded_file(file, allowed_extensions=['png', 'jpg', 'jpeg', 'gif', 'webp'], max_size_mb=5)
+        if file_error:
+            return JsonResponse({'error': file_error}, status=400)
+        user = request.user
+        old_pic_name = user.profile_pic.name if user.profile_pic else None
+        user.profile_pic = file
+        user.save(update_fields=['profile_pic'])
+        user.refresh_from_db()
+        if old_pic_name and old_pic_name != user.profile_pic.name:
+            try:
+                from django.core.files.storage import default_storage
+                default_storage.delete(old_pic_name)
+            except Exception:
+                pass
+        pic_url = user.profile_pic.url if user.profile_pic else None
+        return JsonResponse({'success': True, 'url': pic_url})
+    except Exception:
+        return JsonResponse({'error': 'An error occurred while uploading your profile picture.'}, status=500)
 
 
 @login_required

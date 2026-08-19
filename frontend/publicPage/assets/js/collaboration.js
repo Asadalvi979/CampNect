@@ -1,4 +1,8 @@
-﻿const projectsData = Array.isArray(window.projectsData) ? window.projectsData : [];
+﻿if (typeof window.escHtml !== 'function') {
+    window.escHtml = function (str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+}
+
+const projectsData = Array.isArray(window.projectsData) ? window.projectsData : [];
 
 const projectGrid = document.getElementById('projectGrid');
 const postProjectBtn = document.getElementById('postProjectBtn');
@@ -7,7 +11,11 @@ const projectForm = document.getElementById('postProjectForm');
 const projectCancel = document.getElementById('projectCancel');
 const projectSearch = document.getElementById('projectSearch');
 
-let interestedProjects = new Set(window.interestedIds || []);
+let interestedProjects = new Set((() => {
+    const el = document.getElementById('interested-ids');
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+})());
 let searchTerm = '';
 
 function renderProjects() {
@@ -36,17 +44,17 @@ function renderProjects() {
                 <div class="project-card-header">
                     <div class="project-card-icon"><i class="fas fa-rocket"></i></div>
                     <div>
-                        <h3>${p.title}</h3>
-                        <p>${p.postedById ? `<a href="#" onclick="showUserQuickView(${p.postedById}); return false;" style="color:inherit;text-decoration:none;">${p.postedBy || ''}</a>` : (p.postedBy || '')} ${p.postedByInfo ? '• ' + p.postedByInfo : ''}</p>
+                        <h3>${escHtml(p.title)}</h3>
+                        <p>${p.postedById ? `<a href="#" onclick="showUserQuickView(${p.postedById}); return false;" style="color:inherit;text-decoration:none;">${escHtml(p.postedBy || '')}</a>` : escHtml(p.postedBy || '')} ${p.postedByInfo ? '• ' + escHtml(p.postedByInfo) : ''}</p>
                     </div>
                 </div>
-                <p class="project-desc">${p.desc}</p>
-                ${roles.length ? '<div class="project-roles">' + roles.map(r => `<span class="role-tag">${r}</span>`).join('') + '</div>' : ''}
-                ${tags.length ? '<div class="project-tags">' + tags.map(t => `<span class="project-tag">#${t}</span>`).join('') + '</div>' : ''}
+                <p class="project-desc">${escHtml(p.desc)}</p>
+                ${roles.length ? '<div class="project-roles">' + roles.map(r => `<span class="role-tag">${escHtml(r)}</span>`).join('') + '</div>' : ''}
+                ${tags.length ? '<div class="project-tags">' + tags.map(t => `<span class="project-tag">#${escHtml(t)}</span>`).join('') + '</div>' : ''}
                 <div class="project-card-footer">
                     <span><i class="fas fa-handshake"></i> <span class="interest-count-${p.id}">${p.interested}</span> interested</span>
                     <div>
-                        <a href="${p.chat_url}" class="chat-comm-btn" style="margin-right:6px;text-decoration:none;padding:0.3rem 0.8rem;border-radius:var(--radius-xl);font-size:var(--fs-sm);background:#1C3353;color:#F6F0D6;"><i class="fas fa-comments"></i> Chat</a>
+                        <a href="${escHtml(p.chat_url)}" class="chat-comm-btn" style="margin-right:6px;text-decoration:none;padding:0.3rem 0.8rem;border-radius:var(--radius-xl);font-size:var(--fs-sm);background:#1C3353;color:#F6F0D6;"><i class="fas fa-comments"></i> Chat</a>
                         <button class="interest-btn ${isInterested ? 'interested' : ''}" data-id="${p.id}">
                             ${isInterested ? '✓ Interested' : '<i class="fas fa-handshake"></i> Interested'}
                         </button>

@@ -100,7 +100,3 @@ def send_otp_email(subject: str, recipient_email: str, otp_code: str, resend: bo
     except Exception:
         logger.exception(f'Failed to send email to {recipient_email}')
         return False
-
-
-def _escape_json(s: str) -> str:
-    return s.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/SCRIPT>')

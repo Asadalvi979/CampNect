@@ -1,4 +1,8 @@
-﻿const communityData = Array.isArray(window.communityData) ? window.communityData : [];
+﻿if (typeof window.escHtml !== 'function') {
+    window.escHtml = function (str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+}
+
+const communityData = Array.isArray(window.communityData) ? window.communityData : [];
 
 const communitiesGrid = document.getElementById('communitiesGrid');
 const catTabs = document.querySelectorAll('.cat-tab');
@@ -82,18 +86,18 @@ function renderCommunities() {
                 <div class="community-card-top">
                     <div class="community-card-icon"><i class="fas fa-users"></i></div>
                     <div class="community-card-info">
-                        <h3>${c.name}</h3>
+                        <h3>${escHtml(c.name)}</h3>
                         <div class="community-card-meta">
-                            <span class="comm-cat-badge cat-${c.category}">${catLabel}</span>
+                            <span class="comm-cat-badge cat-${escHtml(c.category)}">${escHtml(catLabel)}</span>
                             <span><i class="fas fa-user-friends"></i> ${c.members.toLocaleString()} members</span>
                         </div>
                     </div>
-                    ${isJoined ? '<a href="' + c.chat_url + '" class="chat-comm-btn"><i class="fas fa-comments"></i> Chat</a>' : ''}
+                    ${isJoined ? '<a href="' + escHtml(c.chat_url) + '" class="chat-comm-btn"><i class="fas fa-comments"></i> Chat</a>' : ''}
                     <button class="join-comm-btn ${isJoined ? 'joined' : ''}" data-id="${c.id}">
                         ${isJoined ? '✓ Joined' : 'Join'}
                     </button>
                 </div>
-                <p class="community-card-desc">${c.desc}</p>
+                <p class="community-card-desc">${escHtml(c.desc)}</p>
             </div>
         `;
     }).join('');

@@ -3,6 +3,15 @@
 *.env.local
 *.env.production
 
+# Logs
+*.log
+server.log
+server_err.log
+
+# Cookie jars (may contain live session tokens)
+cookies.txt
+cookies*.txt
+
 # Python
 __pycache__/
 *.py[cod]

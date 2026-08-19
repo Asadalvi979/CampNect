@@ -43,22 +43,22 @@ def admin_panel(request):
     communities = Community.objects.annotate(member_count=Count('members'))
     if q and tbl == 'communities':
         communities = communities.filter(name__icontains=q)
-    notes = Note.objects.all()
+    notes = Note.objects.select_related('uploaded_by').all()
     notes_subjects = Note.objects.values_list('subject', flat=True).distinct().order_by('subject')
     if q and tbl == 'notes':
         notes = notes.filter(
             Q(title__icontains=q) | Q(subject__icontains=q) |
             Q(uploaded_by__first_name__icontains=q) | Q(uploaded_by__last_name__icontains=q)
         )
-    announcements = Announcement.objects.all()
+    announcements = Announcement.objects.select_related('posted_by').all()
     if q and tbl == 'announcements':
         announcements = announcements.filter(title__icontains=q)
     collab_posts = CollaborationPost.objects.annotate(
         interest_count=Count('interests'),
         comment_count=Count('comments'),
-    ).prefetch_related('interests__user', 'comments__user')
-    messages_list = Message.objects.all()
-    mentorships = Mentorship.objects.all()
+    ).select_related('posted_by', 'mentor').prefetch_related('interests__user', 'comments__user')
+    messages_list = Message.objects.select_related('sender', 'receiver').all()
+    mentorships = Mentorship.objects.select_related('mentor', 'mentee').all()
 
     total_users = User.objects.count()
     active_users_count = User.objects.filter(is_active=True).count()
@@ -68,9 +68,9 @@ def admin_panel(request):
     last_7 = timezone.now() - timedelta(days=7)
 
     recent_users = User.objects.all().order_by('-date_joined')[:8]
-    recent_communities = Community.objects.all().order_by('-created_at')[:5]
-    recent_notes = Note.objects.all().order_by('-upload_date')[:5]
-    recent_collab = CollaborationPost.objects.all().order_by('-date_posted')[:5]
+    recent_communities = Community.objects.select_related('created_by').order_by('-created_at')[:5]
+    recent_notes = Note.objects.select_related('uploaded_by').order_by('-upload_date')[:5]
+    recent_collab = CollaborationPost.objects.select_related('posted_by', 'mentor').order_by('-date_posted')[:5]
     recent_ann = Announcement.objects.all().order_by('-date_posted')[:5]
 
     all_activities = []
@@ -142,7 +142,7 @@ def admin_panel(request):
     role_labels = [role_map.get(r['role'], r['role']) for r in role_qs]
     role_data = [r['c'] for r in role_qs]
 
-    top_communities_lb = Community.objects.annotate(mc=Count('members')).order_by('-mc')[:20]
+    top_communities_lb = Community.objects.select_related('created_by').annotate(mc=Count('members')).order_by('-mc')[:20]
     communities_lb = [{
         'name': c.name, 'category': c.get_category_display(), 'members': c.mc,
         'creator': f'{c.created_by.first_name} {c.created_by.last_name}' if c.created_by else '-',
@@ -240,6 +240,11 @@ def admin_api(request):
             u = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
+        if u.id == request.user.id:
+            role = request.POST.get('role')
+            is_active_raw = request.POST.get('is_active')
+            if (role and role != 'admin') or (is_active_raw is not None and is_active_raw != '1'):
+                return JsonResponse({'error': 'You cannot demote or deactivate your own account.'}, status=400)
         role = request.POST.get('role')
         is_active_raw = request.POST.get('is_active')
         if role and role in dict(User.Role.choices):
@@ -251,10 +256,16 @@ def admin_api(request):
 
     if action == 'delete_user':
         user_id = request.POST.get('user_id')
+        if str(user_id) == str(request.user.id):
+            return JsonResponse({'error': 'You cannot delete your own account.'}, status=400)
         try:
-            User.objects.get(id=user_id).delete()
+            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
+        for note in Note.objects.filter(uploaded_by=user):
+            if note.file:
+                note.file.delete(save=False)
+        user.delete()
         return JsonResponse({'ok': True})
 
     if action == 'create_community':
@@ -370,9 +381,12 @@ def admin_api(request):
     if action == 'delete_note':
         note_id = request.POST.get('note_id')
         try:
-            Note.objects.get(id=note_id).delete()
+            note = Note.objects.get(id=note_id)
         except Note.DoesNotExist:
             return JsonResponse({'error': 'Note not found'}, status=404)
+        if note.file:
+            note.file.delete(save=False)
+        note.delete()
         return JsonResponse({'ok': True})
 
     if action == 'get_project_detail':

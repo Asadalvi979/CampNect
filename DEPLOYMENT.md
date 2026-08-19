@@ -92,6 +92,34 @@ Visit your Railway domain. You should see the CampNect landing page.
 
 ---
 
+## Database Backups (recommended)
+
+Railway volumes persist MySQL data across redeploys, but they do **not** protect
+against accidental deletes, corruption, or a destroyed volume. Take regular
+snapshots:
+
+### Option A — Railway Volume Snapshot (simplest)
+1. In Railway, open the MySQL service → **Settings** → **Volumes**.
+2. Click the volume → **Snapshot** to create a point-in-time backup.
+3. Restore via **Restore Snapshot** when needed.
+
+### Option B — Scheduled `mysqldump` to object storage
+
+Run a small scheduled job (cron / GitHub Actions / Railway cron) that dumps the
+DB and uploads it to private object storage (B2 / S3):
+
+```bash
+# Example: daily mysqldump + upload (adapt variables)
+mysqldump --single-transaction -u "$DB_USER" -p"$DB_PASSWORD" -h "$DB_HOST" "$DB_NAME" \
+  | gzip > campnect_backup_$(date +%F).sql.gz
+# upload the file to Backblaze B2 / AWS S3 (e.g. with b2 or aws cli)
+# then delete backups older than 14 days locally
+```
+
+Keep at least **14 days** of backups and test a restore at least once a quarter.
+
+---
+
 ## Media Files in Production
 
 Railway uses ephemeral storage — uploaded files are lost on each deploy. For production:
@@ -108,6 +136,22 @@ Railway uses ephemeral storage — uploaded files are lost on each deploy. For p
 3. Use `django-storages` with S3 backend
 
 ---
+
+## Real-time Chat & WebSockets
+
+CampNect ships with WebSocket support (Django Channels + daphne, see `start.sh`)
+that upgrades the 3-second HTTP polling used by chat, community, collaboration
+and mentorship conversations.
+
+- **Channel layer**: the default `InMemoryChannelLayer` only works inside a
+  **single process**. `start.sh` runs daphne as one process, so this is fine.
+  If you later scale to multiple gunicorn/daphne workers, broadcasts will only
+  reach sockets on the same worker — switch to the Redis channel layer
+  (`channels_redis`) or accept that clients fall back to polling.
+- **Graceful degradation**: if `channels`/`daphne` are not installed (or are
+  incompatible with the installed Django), the app boots normally, `asgi.py`
+  serves plain HTTP, and every chat client automatically falls back to the
+  existing polling. No config change is needed.
 
 ## Troubleshooting
 

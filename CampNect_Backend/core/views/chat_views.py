@@ -1,4 +1,3 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -6,7 +5,8 @@ from django.contrib import messages
 from django.db.models import Q
 from ..models import User, Message, Connection, Mentorship, MentorshipRequest, CommunityMember, Notification
 from ..permissions import is_alumni, is_sem1to4_student, is_senior_student, is_student_to_alumni
-from .utils import validate_uploaded_file, _escape_json
+from .utils import validate_uploaded_file
+from ..consumers import broadcast_message, broadcast_message_deleted, group_name_1to1
 
 
 @login_required
@@ -17,10 +17,10 @@ def chat_view(request):
             partner = get_object_or_404(User, id=user_id)
             msgs = Message.objects.filter(
                 Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user)
-            ).order_by('timestamp')
+            ).select_related('sender').order_by('timestamp')
             msgs_data = [{
                 'id': m.id,
-                'sender_id': m.sender.id,
+                'sender_id': m.sender_id,
                 'text': m.text,
                 'file': m.file.url if m.file else None,
                 'timestamp': m.timestamp.isoformat(),
@@ -44,7 +44,9 @@ def chat_view(request):
                     return JsonResponse({'ok': False, 'error': 'You can only delete your own messages.'})
                 messages.error(request, 'You can only delete your own messages.')
             else:
+                group = group_name_1to1(request.user.id, msg.receiver_id)
                 msg.delete()
+                broadcast_message_deleted(group, msg.id)
                 if _is_ajax:
                     return JsonResponse({'ok': True})
                 messages.success(request, 'Message deleted.')
@@ -106,6 +108,7 @@ def chat_view(request):
                     messages.error(request, file_error)
                     return redirect('chat')
             msg = Message.objects.create(sender=request.user, receiver=receiver, text=text, file=uploaded_file)
+            broadcast_message(group_name_1to1(request.user.id, receiver.id), msg)
 
             Notification.objects.create(
                 recipient=receiver,
@@ -121,7 +124,7 @@ def chat_view(request):
                     'ok': True,
                     'message': {
                         'id': msg.id,
-                        'sender_id': msg.sender.id,
+                        'sender_id': msg.sender_id,
                         'text': msg.text,
                         'file': msg.file.url if msg.file else None,
                         'timestamp': msg.timestamp.isoformat(),
@@ -154,17 +157,20 @@ def chat_view(request):
         users = users.exclude(role='student')
 
     conversation_partner_ids = set()
-    raw_messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user)).order_by('-timestamp')
+    raw_messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user)).select_related('sender', 'receiver').order_by('-timestamp')
 
     messages_by_partner = {}
     for msg in raw_messages:
-        partner = msg.receiver if msg.sender == request.user else msg.sender
+        if msg.sender_id == request.user.id:
+            partner = msg.receiver
+        else:
+            partner = msg.sender
         conversation_partner_ids.add(partner.id)
         if partner.id not in messages_by_partner:
             messages_by_partner[partner.id] = {'partner': partner, 'messages': []}
         messages_by_partner[partner.id]['messages'].append({
             'id': msg.id,
-            'sender_id': msg.sender.id,
+            'sender_id': msg.sender_id,
             'text': msg.text,
             'file': msg.file.url if msg.file else None,
             'timestamp': msg.timestamp.isoformat(),
@@ -201,8 +207,8 @@ def chat_view(request):
 
     context = {
         'users': users,
-        'conversations_json': _escape_json(json.dumps(conversations_list)),
-        'all_users_json': _escape_json(json.dumps(all_users)),
+        'conversations': conversations_list,
+        'all_users': all_users,
         'connections_count': connections_count,
         'communities_count': communities_count,
     }

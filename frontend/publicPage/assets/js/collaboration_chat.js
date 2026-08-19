@@ -47,29 +47,66 @@ function convertImageLinks(container) {
 scrollToBottom();
 convertImageLinks(chatMessages);
 
-if (window.postId) {
-    setInterval(function () {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/collaboration/' + window.postId + '/chat/?ajax=1', true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.html) {
-                        var oldScrollTop = chatMessages.scrollTop;
-                        var oldHeight = chatMessages.scrollHeight;
-                        chatMessages.innerHTML = data.html;
-                        convertImageLinks(chatMessages);
-                        if (chatMessages.scrollHeight > oldHeight) {
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        } else {
-                            chatMessages.scrollTop = oldScrollTop;
-                        }
+function loadCollabMessages() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/collaboration/' + window.postId + '/chat/?ajax=1', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                if (data.html) {
+                    var oldScrollTop = chatMessages.scrollTop;
+                    var oldHeight = chatMessages.scrollHeight;
+                    chatMessages.innerHTML = data.html;
+                    convertImageLinks(chatMessages);
+                    if (chatMessages.scrollHeight > oldHeight) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        chatMessages.scrollTop = oldScrollTop;
                     }
-                } catch (e) {}
-            }
-        };
-        xhr.send();
-    }, 3000);
+                }
+            } catch (e) {}
+        }
+    };
+    xhr.send();
+}
+
+var collabSocket = null;
+var collabPollTimer = null;
+
+function startCollabPolling() {
+    if (collabPollTimer) return;
+    collabPollTimer = setInterval(loadCollabMessages, 3000);
+}
+
+function stopCollabPolling() {
+    if (collabPollTimer) {
+        clearInterval(collabPollTimer);
+        collabPollTimer = null;
+    }
+}
+
+function connectCollabSocket() {
+    if (!window.postId) return;
+    if (collabSocket) { try { collabSocket.close(); } catch (e) {} collabSocket = null; }
+    if (!window.WebSocket) { startCollabPolling(); return; }
+    var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    try {
+        collabSocket = new WebSocket(proto + location.host + '/ws/collaboration/' + window.postId + '/');
+    } catch (e) { startCollabPolling(); return; }
+    collabSocket.onopen = function () { stopCollabPolling(); };
+    collabSocket.onmessage = function (e) {
+        try {
+            var data = JSON.parse(e.data);
+            if (data.type === 'chat_message') loadCollabMessages();
+        } catch (err) {}
+    };
+    collabSocket.onclose = function () { collabSocket = null; startCollabPolling(); };
+    collabSocket.onerror = function () { try { collabSocket.close(); } catch (e) {} };
+}
+
+if (window.postId) {
+    connectCollabSocket();
+    startCollabPolling();
 }

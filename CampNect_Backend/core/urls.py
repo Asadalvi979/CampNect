@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -31,8 +31,8 @@ urlpatterns = [
     path('api/send-mentorship-request/', views.send_mentorship_request_api, name='send_mentorship_request'),
     path('api/mentorship-requests/', views.mentorship_requests_api, name='mentorship_requests_api'),
     path('api/handle-mentorship-request/', views.handle_mentorship_request_api, name='handle_mentorship_request'),
+    path('api/upload-profile-pic/', views.upload_profile_pic_api, name='upload_profile_pic'),
     path('api/update-alumni-profile/', views.update_alumni_profile_api, name='update_alumni_profile'),
     path('api/notifications/', views.notifications_api, name='notifications_api'),
     path('api/notifications/unread-count/', views.unread_notification_count_api, name='unread_notification_count'),
-    re_path(r'^.*$', views.custom_404),
 ]

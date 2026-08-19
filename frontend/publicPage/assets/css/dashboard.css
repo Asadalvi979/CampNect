@@ -1486,3 +1486,36 @@ body {
         display: none;
     }
 }
+/* ─── Feed pagination ─── */
+.feed-pagination {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md, 1rem);
+    padding: var(--space-lg, 1.5rem) 0 var(--space-xl, 2rem);
+}
+
+.feed-page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.4rem;
+    background: var(--color-navy, #1C3353);
+    color: var(--color-cream, #F6F0D6);
+    border-radius: var(--radius-full, 9999px);
+    font-size: var(--fs-sm, 0.8rem);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast, 150ms ease);
+    border: 1px solid transparent;
+}
+
+.feed-page-btn:hover {
+    background: var(--color-gold, #D4AF37);
+    color: var(--color-navy, #1C3353);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover, 0 12px 32px rgba(0, 0, 0, 0.13));
+}
+
+.feed-page-btn:active {
+    transform: translateY(0);
+}

@@ -88,9 +88,9 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ conversations|json_script:"conversations-data" }}
+{{ all_users|json_script:"all-users-data" }}
 <script>
-    window.conversationsData = {{ conversations_json|safe }};
-    window.allUsersData = {{ all_users_json|safe }};
 
     var ctxMenu = document.getElementById('ctxMenu');
     var ctxTarget = null;

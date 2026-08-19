@@ -5,7 +5,7 @@
 {% block nav_dashboard %}active{% endblock %}
 
 {% block content %}
-<div class="feed-tabs">
+<div class="feed-tabs reveal">
     <button class="tab-btn active" data-filter="all">All</button>
     <button class="tab-btn" data-filter="announcement"><i class="fas fa-bullhorn"></i> Announcements</button>
     <button class="tab-btn" data-filter="notes"><i class="fas fa-book"></i> Notes</button>
@@ -13,11 +13,21 @@
 </div>
 
 <div class="feed" id="feedContainer"></div>
+{% if feed_has_prev or feed_has_next %}
+<div class="feed-pagination">
+    {% if feed_has_prev %}
+        <a href="?page={{ feed_prev }}&amp;tab={{ active_feed_tab }}" class="feed-page-btn">&larr; Previous</a>
+    {% endif %}
+    {% if feed_has_next %}
+        <a href="?page={{ feed_next }}&amp;tab={{ active_feed_tab }}" class="feed-page-btn">Next &rarr;</a>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block right_panel %}
 <aside class="right-panel">
-    <div class="panel-widget">
+    <div class="panel-widget reveal">
         <div class="panel-widget-header">
             <i class="fas fa-fire"></i>
             <h3>Trending Communities</h3>
@@ -48,7 +58,7 @@
     </div>
 
     {% if user.role != 'student' or user.semester and user.semester >= 5 %}
-    <div class="panel-widget">
+    <div class="panel-widget reveal" style="--reveal-delay:0.1s;">
         <div class="panel-widget-header">
             <i class="fas fa-graduation-cap"></i>
             <h3>Suggested Alumni</h3>
@@ -86,7 +96,7 @@
     {% endif %}
 
     {% if is_senior_student and alumni_announcements %}
-    <div class="panel-widget">
+    <div class="panel-widget reveal" style="--reveal-delay:0.2s;">
         <div class="panel-widget-header">
             <i class="fas fa-bullhorn"></i>
             <h3>Alumni Career Updates</h3>
@@ -109,7 +119,7 @@
     </div>
     {% endif %}
 
-    <div class="panel-widget">
+    <div class="panel-widget reveal" style="--reveal-delay:0.3s;">
         <div class="panel-widget-header">
             <i class="fas fa-user-friends"></i>
             <h3>Suggested Connections</h3>
@@ -146,9 +156,9 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ liked_ann_ids|json_script:"liked-ann-ids" }}
+{{ liked_collab_ids|json_script:"liked-collab-ids" }}
 <script>
-window.likedAnnIds = {{ liked_ann_ids|safe }};
-window.likedCollabIds = {{ liked_collab_ids|safe }};
 window.feedData = [
     {% for announcement in announcements %}
     {

@@ -54,9 +54,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    window.mentorsData = {{ mentors_json|safe }};
-    window.mentorshipRequestsData = {{ mentorship_requests_json|safe }};
-</script>
+{{ mentors_data|json_script:"mentors-data" }}
+{{ mentorship_requests_data|json_script:"mentorship-requests-data" }}
+
 <script src="{% static 'assets/js/mentorship.js' %}"></script>
 {% endblock %}

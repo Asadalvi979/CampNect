@@ -1,5 +1,14 @@
-﻿var conversationsData = Array.isArray(window.conversationsData) ? window.conversationsData : [];
-var allUsersData = Array.isArray(window.allUsersData) ? window.allUsersData : [];
+﻿if (typeof window.escHtml !== 'function') {
+    window.escHtml = function (str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+}
+
+function readJSONData(id) {
+    var el = document.getElementById(id);
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+}
+var conversationsData = readJSONData('conversations-data');
+var allUsersData = readJSONData('all-users-data');
 
 var conversationsList = document.getElementById('conversationsList');
 var chatMessages = document.getElementById('chatMessages');
@@ -22,7 +31,7 @@ var searchTerm = '';
 var selectedFile = null;
 
 function avatarHtml(pic, initials) {
-    return pic ? '<img src="' + pic + '" alt="" class="avatar-img">' : '<span class="avatar-initials">' + initials + '</span>';
+    return pic ? '<img src="' + escHtml(pic) + '" alt="" class="avatar-img">' : '<span class="avatar-initials">' + escHtml(initials) + '</span>';
 }
 
 function renderConversations() {
@@ -36,8 +45,8 @@ function renderConversations() {
         return '<div class="conversation-item ' + (activeConversation === c.id ? 'active' : '') + '" data-id="' + c.id + '">' +
             '<div class="conversation-avatar">' + avatarHtml(c.profile_pic, c.avatar_initials) + '</div>' +
             '<div class="conversation-info">' +
-                '<h4>' + c.name + '</h4>' +
-                '<p>' + (c.last_message || '') + '</p>' +
+                '<h4>' + escHtml(c.name) + '</h4>' +
+                '<p>' + escHtml(c.last_message || '') + '</p>' +
             '</div>' +
             '<div class="conversation-meta">' +
                 '<span>' + (c.last_time ? new Date(c.last_time).toLocaleDateString() : '') + '</span>' +
@@ -74,28 +83,40 @@ function openConversation(id) {
     sendBtn.disabled = false;
     chatInput.focus();
 
+    if (typeof connectChatSocket === 'function') connectChatSocket(id);
+
     if (window.innerWidth <= 768) {
         document.querySelector('.conversations-panel').classList.add('hide');
         document.getElementById('chatWindow').classList.add('show');
     }
 
     renderConversations();
+    renderChatMessages(conv);
+}
 
+function renderChatMessages(conv) {
     var partnerPic = conv.profile_pic;
     var partnerInitials = conv.avatar_initials;
-    var msgs = conv.messages || [];
+    var seen = {};
+    var msgs = (conv.messages || []).filter(function (m) {
+        var id = m.id;
+        if (id === undefined || id === null) return true;
+        if (seen[id]) return false;
+        seen[id] = true;
+        return true;
+    });
     if (msgs.length === 0) {
         chatMessages.innerHTML = '<div class="no-conversation-selected"><p><i class="fas fa-comments"></i> No messages yet. Say hello!</p></div>';
     } else {
         chatMessages.innerHTML = msgs.map(function (m) {
             var content = '';
-            if (m.text) content += m.text;
+            if (m.text) content += escHtml(m.text);
             if (m.file) {
                 var isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(m.file);
                 if (isImg) {
-                    content += '<img src="' + m.file + '" class="msg-img-preview" alt="" onclick="openImageLightbox(\'' + m.file.replace(/'/g, "\\'") + '\')" loading="lazy">';
+                    content += '<img src="' + escHtml(m.file) + '" class="msg-img-preview" alt="" onclick="openImageLightbox(\'' + jsArg(m.file) + '\')" loading="lazy">';
                 } else {
-                    content += '<a href="' + m.file + '" class="msg-file" target="_blank" style="display:block;margin-top:6px;color:inherit;"><i class="fas fa-paperclip"></i> ' + m.file.split('/').pop() + '</a>';
+                    content += '<a href="' + escHtml(m.file) + '" class="msg-file" target="_blank" style="display:block;margin-top:6px;color:inherit;"><i class="fas fa-paperclip"></i> ' + escHtml(m.file.split('/').pop()) + '</a>';
                 }
             }
             var avatar = avatarHtml(partnerPic, partnerInitials);
@@ -121,10 +142,6 @@ function getCSRFToken() {
     if (match) return match[1];
     var el = document.querySelector('input[name="csrfmiddlewaretoken"]');
     return el ? el.value : '';
-}
-
-function scrollToBottom() {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function sendMessage() {
@@ -168,7 +185,9 @@ function sendMessage() {
             }
             if (conv) {
                 if (!conv.messages) conv.messages = [];
-                conv.messages.push(data.message);
+                if (!(chatSocket && chatSocket.readyState === 1)) {
+                    conv.messages.push(data.message);
+                }
             }
             chatInput.value = '';
             chatInput.placeholder = 'Type a message...';
@@ -176,8 +195,7 @@ function sendMessage() {
                 selectedFile = null;
                 if (chatFileInput) chatFileInput.value = '';
             }
-            openConversation(convId);
-            scrollToBottom();
+            renderChatMessages(conv);
         } else {
             alert(data.error);
         }
@@ -246,13 +264,17 @@ document.getElementById('chatMessages').addEventListener('click', function (e) {
     .then(function (data) {
         if (data.ok) {
             var convId = activeConversation;
+            var conv = null;
             for (var i = 0; i < conversationsData.length; i++) {
-                if (conversationsData[i].id === convId && conversationsData[i].messages) {
-                    conversationsData[i].messages = conversationsData[i].messages.filter(function (m) { return m.id != msgId; });
+                if (conversationsData[i].id === convId) {
+                    conv = conversationsData[i];
+                    if (conv.messages) {
+                        conv.messages = conv.messages.filter(function (m) { return m.id != msgId; });
+                    }
                     break;
                 }
             }
-            openConversation(convId);
+            if (conv) renderChatMessages(conv);
         } else {
             alert(data.error);
         }
@@ -281,8 +303,8 @@ function renderUserList(filter) {
         return '<div class="new-msg-user-item" data-id="' + u.id + '">' +
             '<div class="conversation-avatar" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;">' + avatarHtml(u.profile_pic, u.avatar_initials) + '</div>' +
             '<div class="conversation-info">' +
-                '<h4><a href="#" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;" style="color:inherit;text-decoration:none;">' + u.name + '</a></h4>' +
-                '<p>' + u.department + (u.role ? ' \u2022 ' + u.role : '') + '</p>' +
+                '<h4><a href="#" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;" style="color:inherit;text-decoration:none;">' + escHtml(u.name) + '</a></h4>' +
+                '<p>' + escHtml(u.department) + (u.role ? ' \u2022 ' + escHtml(u.role) : '') + '</p>' +
             '</div>' +
         '</div>';
     }).join('');
@@ -373,13 +395,13 @@ function renderSuggestions() {
     section.style.display = 'block';
     list.innerHTML = suggested.map(function (u) {
         var avatar = u.profile_pic
-            ? '<img src="' + u.profile_pic + '" alt="" class="avatar-img">'
-            : '<span>' + u.avatar_initials + '</span>';
+            ? '<img src="' + escHtml(u.profile_pic) + '" alt="" class="avatar-img">'
+            : '<span>' + escHtml(u.avatar_initials) + '</span>';
         return '<div class="suggestion-item" data-id="' + u.id + '">' +
             '<div class="suggestion-avatar" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;">' + avatar + '</div>' +
             '<div class="suggestion-info">' +
-                '<h4><a href="#" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;" style="color:inherit;text-decoration:none;">' + u.name + '</a></h4>' +
-                '<p>' + (u.department || '') + (u.role ? ' \u2022 ' + u.role : '') + '</p>' +
+                '<h4><a href="#" onclick="event.stopPropagation();showUserQuickView(' + u.id + ');return false;" style="color:inherit;text-decoration:none;">' + escHtml(u.name) + '</a></h4>' +
+                '<p>' + escHtml(u.department || '') + (u.role ? ' \u2022 ' + escHtml(u.role) : '') + '</p>' +
             '</div>' +
         '</div>';
     }).join('');
@@ -538,36 +560,89 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-if (window.currentUser) {
-    setInterval(function() {
-        if (!activeUserId) return;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/chat/?ajax=1&user_id=' + activeUserId, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.ok) {
-                        var conv = null;
-                        for (var i = 0; i < conversationsData.length; i++) {
-                            if (conversationsData[i].id === activeUserId) {
-                                conv = conversationsData[i];
-                                break;
-                            }
-                        }
-                        if (conv) {
-                            var oldLen = conv.messages ? conv.messages.length : 0;
-                            conv.messages = data.messages;
-                            if (data.messages.length !== oldLen) {
-                                openConversation(activeUserId);
-                                scrollToBottom();
-                            }
+function loadChatMessages(userId) {
+    if (!userId) return;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/chat/?ajax=1&user_id=' + userId, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                if (data.ok) {
+                    var conv = null;
+                    for (var i = 0; i < conversationsData.length; i++) {
+                        if (conversationsData[i].id === userId) {
+                            conv = conversationsData[i];
+                            break;
                         }
                     }
-                } catch(e) {}
-            }
-        };
-        xhr.send();
+                    if (conv) {
+                        var oldLen = conv.messages ? conv.messages.length : 0;
+                        conv.messages = data.messages;
+                        if (data.messages.length !== oldLen) {
+                            renderChatMessages(conv);
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+    };
+    xhr.send();
+}
+
+function removeDeletedMessage(userId, msgId) {
+    var conv = null;
+    for (var i = 0; i < conversationsData.length; i++) {
+        if (conversationsData[i].id === userId) {
+            conv = conversationsData[i];
+            break;
+        }
+    }
+    if (!conv || !conv.messages) return;
+    var before = conv.messages.length;
+    conv.messages = conv.messages.filter(function (m) { return m.id != msgId; });
+    if (conv.messages.length !== before) renderChatMessages(conv);
+}
+
+var chatSocket = null;
+var chatPollTimer = null;
+
+function startChatPolling() {
+    if (chatPollTimer) return;
+    chatPollTimer = setInterval(function () {
+        if (activeUserId) loadChatMessages(activeUserId);
     }, 3000);
+}
+
+function stopChatPolling() {
+    if (chatPollTimer) {
+        clearInterval(chatPollTimer);
+        chatPollTimer = null;
+    }
+}
+
+function connectChatSocket(userId) {
+    if (!userId) return;
+    if (chatSocket) { try { chatSocket.close(); } catch (e) {} chatSocket = null; }
+    if (!window.WebSocket) { startChatPolling(); return; }
+    var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    try {
+        chatSocket = new WebSocket(proto + location.host + '/ws/chat/' + userId + '/');
+    } catch (e) { startChatPolling(); return; }
+    chatSocket.onopen = function () { stopChatPolling(); };
+    chatSocket.onmessage = function (e) {
+        try {
+            var data = JSON.parse(e.data);
+            if (data.type === 'chat_message') loadChatMessages(userId);
+            else if (data.type === 'chat_message_deleted') removeDeletedMessage(userId, data.message_id);
+        } catch (err) {}
+    };
+    chatSocket.onclose = function () { chatSocket = null; startChatPolling(); };
+    chatSocket.onerror = function () { try { chatSocket.close(); } catch (e) {} };
+}
+
+if (window.currentUser) {
+    connectChatSocket(activeUserId);
+    startChatPolling();
 }

@@ -1,4 +1,8 @@
-﻿const notesData = Array.isArray(window.notesData) ? window.notesData : [];
+﻿if (typeof window.escHtml !== 'function') {
+    window.escHtml = function (str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+}
+
+const notesData = Array.isArray(window.notesData) ? window.notesData : [];
 
 const notesGrid = document.getElementById('notesGrid');
 const semTabs = document.querySelectorAll('.sem-tab');
@@ -33,14 +37,14 @@ function renderNotes() {
     }
 
     notesGrid.innerHTML = filtered.map(n => `
-        <div class="note-card" data-id="${n.id}" data-url="${n.url || ''}" data-uploader="${n.uploaderId}" data-title="${n.title.replace(/"/g, '&quot;')}" data-desc="${(n.desc || '').replace(/"/g, '&quot;')}">
+        <div class="note-card" data-id="${n.id}" data-url="${escHtml(n.url || '')}" data-uploader="${n.uploaderId}" data-title="${escHtml(n.title)}" data-desc="${escHtml(n.desc || '')}">
             <div class="note-card-icon"><i class="fas fa-file"></i></div>
-            <h3>${n.title}</h3>
-            <p class="note-subject">${n.subject} ${n.semester ? '• Semester ' + n.semester : ''}</p>
-            <p class="note-desc">${n.desc}</p>
+            <h3>${escHtml(n.title)}</h3>
+            <p class="note-subject">${escHtml(n.subject)} ${n.semester ? '• Semester ' + escHtml(n.semester) : ''}</p>
+            <p class="note-desc">${escHtml(n.desc)}</p>
             <div class="note-meta">
-                <span><i class="fas fa-user"></i> <a href="#" onclick="showUserQuickView(${n.uploaderId}); return false;" style="color:inherit;text-decoration:none;">${n.uploader}</a> ${n.downloads ? '• <i class="fas fa-inbox"></i> ' + n.downloads + ' downloads' : ''}</span>
-                ${n.url ? `<a class="download-note-btn" href="${n.url}" download>Download</a>` : ''}
+                <span><i class="fas fa-user"></i> <a href="#" onclick="showUserQuickView(${n.uploaderId}); return false;" style="color:inherit;text-decoration:none;">${escHtml(n.uploader)}</a> ${n.downloads ? '• <i class="fas fa-inbox"></i> ' + n.downloads + ' downloads' : ''}</span>
+                ${n.url ? `<a class="download-note-btn" href="${escHtml(n.url)}" download>Download</a>` : ''}
             </div>
         </div>
     `).join('');

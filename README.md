@@ -253,7 +253,7 @@ cd CampNect_Backend
 pip install -r requirements.txt
 
 # Configure environment
-cp .env.production .env
+cp .env.example .env
 # Edit .env with your database credentials and settings
 
 # Run migrations
@@ -270,7 +270,7 @@ Visit **http://127.0.0.1:8000** to see the app.
 
 ### Environment Variables
 
-Create a `.env` file in `CampNect_Backend/`:
+Create a `.env` file in `CampNect_Backend/` (start from the committed `.env.example` template):
 
 ```env
 SECRET_KEY=your-secret-key

@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from ..models import User, Community, CommunityMember, CommunityMessage, Connection
 from ..forms import CommunityCreateForm
 from .utils import validate_uploaded_file
+from ..consumers import broadcast_message
 
 
 @login_required
@@ -148,10 +149,11 @@ def community_chat_view(request, community_id):
                 if file_error:
                     messages.error(request, file_error)
                     return redirect('community_chat', community_id=community.id)
-            CommunityMessage.objects.create(community=community, sender=request.user, text=text, file=uploaded_file)
+            msg = CommunityMessage.objects.create(community=community, sender=request.user, text=text, file=uploaded_file)
+            broadcast_message(f'community_{community.id}', msg)
         return redirect('community_chat', community_id=community.id)
 
-    messages_list = CommunityMessage.objects.filter(community=community).order_by('timestamp')
+    messages_list = CommunityMessage.objects.filter(community=community).select_related('sender').order_by('timestamp')
     all_members = CommunityMember.objects.filter(community=community).select_related('user')
     admin_ids = set(m.user_id for m in all_members if m.is_admin)
     members = all_members.exclude(user__is_superuser=True)

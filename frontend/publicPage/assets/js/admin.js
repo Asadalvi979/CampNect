@@ -3,6 +3,28 @@ function getCSRFToken() {
   return m ? m[1] : '';
 }
 
+// HTML/safe escaping for all user-controlled content rendered via innerHTML.
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// Escape a value embedded as a JS string arg inside a double-quoted HTML
+// attribute (e.g. onclick="fn('...')"). Escapes backslashes + single quotes
+// for the JS layer and HTML-encodes the rest for the attribute layer.
+function jsArg(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /* ── Modal helpers ── */
 function openModal(id) {
   document.getElementById(id).classList.add('show');
@@ -20,7 +42,7 @@ function showToast(message, type) {
   var t = document.createElement('div');
   t.className = 'admin-toast ' + type;
   var icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
-  t.innerHTML = '<i class="fas fa-' + icon + '"></i> ' + message;
+  t.innerHTML = '<i class="fas fa-' + icon + '"></i> ' + escHtml(message);
   container.appendChild(t);
   setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 3000);
   setTimeout(function () { t.remove(); }, 3500);
@@ -314,25 +336,25 @@ function openUserDrawer(id) {
   var data = window.usersData[id];
   if (!data) return;
   var body = document.getElementById('drawerBody');
-  var nameSafe = data.name.replace(/'/g, "\\'");
+  var nameSafe = jsArg(data.name);
   body.innerHTML =
     '<div class="drawer-profile">' +
-      (data.avatar ? '<img class="drawer-avatar" src="' + data.avatar + '" alt="">' : '<div class="drawer-avatar" style="background:#2563EB;">' + data.initials + '</div>') +
-      '<h2>' + data.name + '</h2>' +
-      '<span class="role-pill ' + data.role + '">' + data.roleLabel + '</span>' +
+      (data.avatar ? '<img class="drawer-avatar" src="' + escHtml(data.avatar) + '" alt="">' : '<div class="drawer-avatar" style="background:#2563EB;">' + escHtml(data.initials) + '</div>') +
+      '<h2>' + escHtml(data.name) + '</h2>' +
+      '<span class="role-pill ' + data.role + '">' + escHtml(data.roleLabel) + '</span>' +
     '</div>' +
     '<div class="drawer-details">' +
-      '<div class="drawer-field"><label>CMS ID</label><span>' + data.cms + '</span></div>' +
-      '<div class="drawer-field"><label>Email</label><span>' + data.email + '</span></div>' +
-      '<div class="drawer-field"><label>Department</label><span>' + (data.department || '\u2014') + '</span></div>' +
-      '<div class="drawer-field"><label>Semester</label><span>' + (data.semester ? 'Semester ' + data.semester : '\u2014') + '</span></div>' +
-      '<div class="drawer-field"><label>Bio</label><span>' + (data.bio || 'No bio') + '</span></div>' +
-      '<div class="drawer-field"><label>Skills</label><span>' + (data.skills || '\u2014') + '</span></div>' +
+      '<div class="drawer-field"><label>CMS ID</label><span>' + escHtml(data.cms) + '</span></div>' +
+      '<div class="drawer-field"><label>Email</label><span>' + escHtml(data.email) + '</span></div>' +
+      '<div class="drawer-field"><label>Department</label><span>' + escHtml(data.department || '\u2014') + '</span></div>' +
+      '<div class="drawer-field"><label>Semester</label><span>' + (data.semester ? 'Semester ' + escHtml(data.semester) : '\u2014') + '</span></div>' +
+      '<div class="drawer-field"><label>Bio</label><span>' + escHtml(data.bio || 'No bio') + '</span></div>' +
+      '<div class="drawer-field"><label>Skills</label><span>' + escHtml(data.skills || '\u2014') + '</span></div>' +
       '<div class="drawer-field"><label>Status</label><span><span class="status-dot' + (data.isActive ? ' active' : '') + '" style="display:inline-block;margin-right:6px;vertical-align:middle;"></span>' + (data.isActive ? 'Active' : 'Inactive') + '</span></div>' +
-      '<div class="drawer-field"><label>Joined</label><span>' + data.dateJoined + '</span></div>' +
+      '<div class="drawer-field"><label>Joined</label><span>' + escHtml(data.dateJoined) + '</span></div>' +
     '</div>' +
     '<div class="drawer-actions">' +
-      '<button class="admin-action-btn edit" onclick="closeUserDrawer();openEditUserModal(' + id + ',\'' + nameSafe + '\',\'' + data.role + '\',' + (data.isActive ? 1 : 0) + ')">Edit Role / Status</button>' +
+      '<button class="admin-action-btn edit" onclick="closeUserDrawer();openEditUserModal(' + id + ',\'' + nameSafe + '\',\'' + jsArg(data.role) + '\',' + (data.isActive ? 1 : 0) + ')">Edit Role / Status</button>' +
       '<button class="admin-action-btn delete" onclick="closeUserDrawer();openDeleteModal(\'user\',' + id + ',\'' + nameSafe + '\')">Delete User</button>' +
     '</div>';
   document.getElementById('userDrawer').classList.add('open');
@@ -417,8 +439,8 @@ function setCommunityDetail(data) {
   document.getElementById('commDetailMemberCount').textContent = data.memberCount;
   document.getElementById('commDetailMemberCount2').textContent = data.memberCount;
   document.getElementById('commDetailDate').textContent = data.date;
-  document.getElementById('commEditBtn').setAttribute('onclick', "openEditCommunityModal(" + data.id + ",'" + data.name.replace(/'/g, "\\'") + "','" + (data.description || '').replace(/'/g, "\\'") + "','" + data.category + "')");
-  document.getElementById('commDeleteBtn').setAttribute('onclick', "openDeleteModal('community'," + data.id + ",'" + data.name.replace(/'/g, "\\'") + "')");
+  document.getElementById('commEditBtn').setAttribute('onclick', "openEditCommunityModal(" + data.id + ",'" + jsArg(data.name) + "','" + jsArg(data.description || '') + "','" + jsArg(data.category) + "')");
+  document.getElementById('commDeleteBtn').setAttribute('onclick', "openDeleteModal('community'," + data.id + ",'" + jsArg(data.name) + "')");
   document.getElementById('commDetailEmpty').style.display = 'none';
   document.getElementById('commDetailContent').style.display = 'block';
 }
@@ -450,14 +472,14 @@ function loadCommunityMembers(commId) {
       d.members.forEach(function (m) {
         html +=
           '<div class="comm-member-item">' +
-            '<div class="comm-member-avatar" style="background:' + (m.is_admin ? '#F59E0B' : '#2563EB') + ';">' + m.initials + '</div>' +
+            '<div class="comm-member-avatar" style="background:' + (m.is_admin ? '#F59E0B' : '#2563EB') + ';">' + escHtml(m.initials) + '</div>' +
             '<div class="comm-member-body">' +
-              '<div class="comm-member-name">' + m.name + (m.is_admin ? ' <span class="comm-member-role">Admin</span>' : '') + '</div>' +
-              '<div class="comm-member-cms">' + m.cms + ' &middot; Joined ' + m.joined_at + '</div>' +
+              '<div class="comm-member-name">' + escHtml(m.name) + (m.is_admin ? ' <span class="comm-member-role">Admin</span>' : '') + '</div>' +
+              '<div class="comm-member-cms">' + escHtml(m.cms) + ' &middot; Joined ' + escHtml(m.joined_at) + '</div>' +
             '</div>' +
             '<div class="comm-member-actions">' +
               '<button class="comm-member-btn promote" title="' + (m.is_admin ? 'Demote' : 'Promote to admin') + '" onclick="promoteMember(' + m.id + ', this)"><i class="fas fa-' + (m.is_admin ? 'user-minus' : 'user-shield') + '"></i></button>' +
-              '<button class="comm-member-btn remove" title="Remove member" onclick="removeMember(' + m.id + ',\'' + m.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-times"></i></button>' +
+              '<button class="comm-member-btn remove" title="Remove member" onclick="removeMember(' + m.id + ',\'' + jsArg(m.name) + '\')"><i class="fas fa-times"></i></button>' +
             '</div>' +
           '</div>';
       });
@@ -555,7 +577,7 @@ function selectNote(id) {
   } else {
     dlLink.style.display = 'none';
   }
-  document.getElementById('notesDetailDeleteBtn').setAttribute('onclick', "openDeleteModal('note'," + id + ",'" + data.title.replace(/'/g, "\\'") + "')");
+  document.getElementById('notesDetailDeleteBtn').setAttribute('onclick', "openDeleteModal('note'," + id + ",'" + jsArg(data.title) + "')");
   document.getElementById('notesDetailEmpty').style.display = 'none';
   document.getElementById('notesDetailBody').style.display = '';
 }
@@ -677,9 +699,9 @@ function renderAnalyticsCharts() {
       var rankClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
       var barW = Math.round((c.members / maxMembers) * 100);
       html += '<tr><td class="lb-rank ' + rankClass + '">#' + (i + 1) + '</td>'
-        + '<td class="lb-name">' + c.name + '</td>'
-        + '<td><span class="lb-badge">' + c.category + '</span></td>'
-        + '<td class="lb-sub">' + c.creator + '</td>'
+        + '<td class="lb-name">' + escHtml(c.name) + '</td>'
+        + '<td><span class="lb-badge">' + escHtml(c.category) + '</span></td>'
+        + '<td class="lb-sub">' + escHtml(c.creator) + '</td>'
         + '<td class="lb-num">' + c.members + '</td>'
         + '<td class="lb-bar-cell"><div class="lb-bar"><div class="lb-bar-fill" style="width:' + barW + '%"></div></div></td>'
         + '</tr>';
@@ -698,7 +720,7 @@ function renderAnalyticsCharts() {
       var rankClass2 = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
       var barW2 = Math.round((d.total / maxTotal) * 100);
       html2 += '<tr><td class="lb-rank ' + rankClass2 + '">#' + (i + 1) + '</td>'
-        + '<td class="lb-name">' + d.department + '</td>'
+        + '<td class="lb-name">' + escHtml(d.department) + '</td>'
         + '<td class="lb-num">' + d.students + '</td>'
         + '<td class="lb-num">' + d.seniors + '</td>'
         + '<td class="lb-num">' + d.alumni + '</td>'
@@ -718,7 +740,7 @@ function renderAnalyticsCharts() {
     var html3 = '';
     ins.forEach(function (t, i) {
       var icon = icons[i % icons.length];
-      html3 += '<div class="insight-card"><div class="insight-icon"><i class="fas ' + icon + '"></i></div><div class="insight-text">' + t + '</div></div>';
+      html3 += '<div class="insight-card"><div class="insight-icon"><i class="fas ' + icon + '"></i></div><div class="insight-text">' + escHtml(t) + '</div></div>';
     });
     iw.innerHTML = html3;
   }

@@ -1,4 +1,7 @@
 (function() {
+    if (typeof window.escHtml !== 'function') {
+        window.escHtml = function (str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+    }
     var bell = document.getElementById('notificationBell');
     var dropdown = document.getElementById('notificationDropdown');
     var badge = document.getElementById('notificationBadge');
@@ -72,16 +75,16 @@
                 for (var i = 0; i < data.notifications.length; i++) {
                     var n = data.notifications[i];
                     var cls = n.is_read ? 'notification-item' : 'notification-item unread';
-                    html += '<div class="' + cls + '" data-id="' + n.id + '" data-type="' + n.type + '" data-related="' + (n.related_object_id || '') + '">';
+                    html += '<div class="' + cls + '" data-id="' + n.id + '" data-type="' + escHtml(n.type) + '" data-related="' + escHtml(n.related_object_id || '') + '">';
                     html += '<div class="notification-icon"><i class="fas fa-' + (n.type.indexOf('mentorship') !== -1 ? 'graduation-cap' : 'bell') + '"></i></div>';
                     html += '<div class="notification-body">';
-                    html += '<div class="notification-title">' + n.title + '</div>';
-                    if (n.message) html += '<div class="notification-msg">' + n.message + '</div>';
-                    html += '<div class="notification-time">' + n.created_at + '</div>';
+                    html += '<div class="notification-title">' + escHtml(n.title) + '</div>';
+                    if (n.message) html += '<div class="notification-msg">' + escHtml(n.message) + '</div>';
+                    html += '<div class="notification-time">' + escHtml(n.created_at) + '</div>';
                     if (n.type === 'mentorship_request' && !n.is_read) {
                         html += '<div class="notification-actions">' +
-                            '<button class="notif-accept" data-notif-id="' + n.id + '" data-req-id="' + (n.related_object_id || '') + '"><i class="fas fa-check"></i> Accept</button>' +
-                            '<button class="notif-reject" data-notif-id="' + n.id + '" data-req-id="' + (n.related_object_id || '') + '"><i class="fas fa-times"></i> Reject</button>' +
+                            '<button class="notif-accept" data-notif-id="' + n.id + '" data-req-id="' + escHtml(n.related_object_id || '') + '"><i class="fas fa-check"></i> Accept</button>' +
+                            '<button class="notif-reject" data-notif-id="' + n.id + '" data-req-id="' + escHtml(n.related_object_id || '') + '"><i class="fas fa-times"></i> Reject</button>' +
                         '</div>';
                     }
                     html += '</div></div>';

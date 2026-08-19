@@ -138,6 +138,26 @@
             var m = document.cookie.match(/\bcsrftoken=([^;]+)/);
             return m ? m[1] : '';
         }
+        // HTML/safe escaping for all user-controlled content rendered via innerHTML.
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+        // Escape a value embedded as a JS string arg inside a double-quoted HTML
+        // attribute (e.g. onclick="fn('...')"). Escapes backslashes + single quotes
+        // for the JS layer and HTML-encodes the rest for the attribute layer.
+        function jsArg(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
     </script>
     {% include 'user_quick_view.html' %}
     <script src="{% static 'assets/js/auth.js' %}"></script>
